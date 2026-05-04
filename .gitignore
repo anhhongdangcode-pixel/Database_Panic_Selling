@@ -1,0 +1,17 @@
+# Bỏ qua file môi trường & bảo mật
+.env
+.venv
+env/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints
+
+# Bỏ qua dữ liệu nặng (chỉ giữ lại file .gitkeep để giữ thư mục)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Bỏ qua file hệ thống
+.DS_Store

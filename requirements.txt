@@ -1,0 +1,9 @@
+pandas
+numpy
+matplotlib
+seaborn
+mysql-connector-python
+sqlalchemy
+python-dotenv
+vnstock3
+jupyter
