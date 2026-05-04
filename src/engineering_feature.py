@@ -1,287 +1,250 @@
+"""
+engineering_feature.py
+-----------------------
+Tính 3 BehaviorSignals từ Trades + Portfolios đã có trong DB:
+  - DrawdownLevel    : max loss từ đỉnh NAV trong 30 ngày gần nhất
+  - SellSpike        : tỷ lệ lệnh SELL có Reason chứa PANIC/DISTRIBUTION / tổng SELL trong 30 ngày
+  - LossSensitivity  : tỷ lệ lệnh SELL có Return_Pct < 0 / tổng SELL trong 30 ngày
+
+PanicScore = 0.4 * DrawdownLevel + 0.4 * SellSpike + 0.2 * LossSensitivity
+
+Sau đó INSERT vào bảng BehaviorSignals (trigger tự bắn vào Warnings).
+
+Cách chạy:
+    cd src
+    python engineering_feature.py
+"""
+
+import sys
+import os
 import pandas as pd
 import numpy as np
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from tqdm import tqdm
+
+# --- Fix import path ---
+FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+if FILE_DIR not in sys.path:
+    sys.path.insert(0, FILE_DIR)
+
 from config import DB_CONNECTION_STR, DATA_RAW_DIR
 
-def calculate_behavioral_features(investor_id, transactions_df, portfolio_df, market_df):
+# ============================================================
+# CONFIG
+# ============================================================
+WINDOW_DAYS     = 30     # Cửa sổ tính signal (30 ngày)
+PANIC_THRESHOLD = 0.65   # Ngưỡng trigger Warning
+WEIGHTS = {
+    'drawdown':        0.4,
+    'sell_spike':      0.4,
+    'loss_sensitivity': 0.2,
+}
+
+# ============================================================
+# LOAD DATA
+# ============================================================
+def load_data(engine):
+    print("📥 Đang tải dữ liệu từ DB...")
+
+    trades_df = pd.read_sql("""
+        SELECT InvestorID, TradeDate, TradeType, Return_Pct, Reason
+        FROM Trades
+    """, engine)
+
+    portfolios_df = pd.read_sql("""
+        SELECT InvestorID, TradeDate, NAV
+        FROM Portfolios
+    """, engine)
+
+    investors_df = pd.read_sql("""
+        SELECT InvestorID FROM Investors
+    """, engine)
+
+    # Chuẩn hóa kiểu ngày
+    trades_df['TradeDate']     = pd.to_datetime(trades_df['TradeDate'])
+    portfolios_df['TradeDate'] = pd.to_datetime(portfolios_df['TradeDate'])
+
+    print(f"  ✅ Trades: {len(trades_df):,} rows")
+    print(f"  ✅ Portfolios: {len(portfolios_df):,} rows")
+    print(f"  ✅ Investors: {len(investors_df):,} rows")
+
+    return investors_df, trades_df, portfolios_df
+
+
+# ============================================================
+# TÍNH 3 SIGNALS CHO 1 INVESTOR TẠI 1 NGÀY
+# ============================================================
+def compute_signals_for_investor(investor_id, obs_date, trades_df, portfolios_df):
     """
-    Tính toán behavioral features cho 1 investor
-    Chỉ dựa trên Market Regime (không dùng technical indicators)
+    Trả về dict {DrawdownLevel, SellSpike, LossSensitivity, PanicScore}
+    hoặc None nếu không đủ dữ liệu.
     """
-    
-    # Filter data
-    inv_trans = transactions_df[transactions_df['Investor_ID'] == investor_id].copy()
-    inv_port = portfolio_df[portfolio_df['Investor_ID'] == investor_id].copy()
-    
-    if len(inv_trans) == 0:
+    start_date = obs_date - pd.Timedelta(days=WINDOW_DAYS)
+
+    # --- Lọc dữ liệu trong cửa sổ ---
+    inv_port = portfolios_df[
+        (portfolios_df['InvestorID'] == investor_id) &
+        (portfolios_df['TradeDate'] >= start_date) &
+        (portfolios_df['TradeDate'] <= obs_date)
+    ].sort_values('TradeDate')
+
+    inv_trades = trades_df[
+        (trades_df['InvestorID'] == investor_id) &
+        (trades_df['TradeDate'] >= start_date) &
+        (trades_df['TradeDate'] <= obs_date)
+    ]
+
+    # Cần ít nhất 5 ngày portfolio và có ít nhất 1 lệnh
+    if len(inv_port) < 5 or len(inv_trades) == 0:
         return None
-    
-    # Merge với market regime
-    inv_trans = inv_trans.merge(
-        market_df[['Date', 'Ticker', 'Market_Regime']], 
-        on=['Date', 'Ticker'], 
-        how='left'
+
+    # -------------------------------------------------------
+    # SIGNAL 1: DrawdownLevel
+    # (peak NAV - NAV cuối cửa sổ) / peak NAV
+    # Đo mức độ thua lỗ so với đỉnh trong 30 ngày
+    # -------------------------------------------------------
+    peak_nav  = inv_port['NAV'].max()
+    final_nav = inv_port['NAV'].iloc[-1]
+
+    if peak_nav <= 0:
+        drawdown = 0.0
+    else:
+        drawdown = max(0.0, (peak_nav - final_nav) / peak_nav)
+
+    # -------------------------------------------------------
+    # SIGNAL 2: SellSpike
+    # Tỷ lệ SELL "hoảng loạn" (Reason có PANIC hoặc DISTRIBUTION)
+    # trên tổng số lệnh SELL trong cửa sổ
+    # -------------------------------------------------------
+    sell_trades = inv_trades[inv_trades['TradeType'] == 'SELL']
+
+    if len(sell_trades) == 0:
+        sell_spike = 0.0
+    else:
+        panic_sells = sell_trades['Reason'].str.contains(
+            'PANIC|DISTRIBUTION', case=False, na=False
+        ).sum()
+        sell_spike = panic_sells / len(sell_trades)
+
+    # -------------------------------------------------------
+    # SIGNAL 3: LossSensitivity
+    # Tỷ lệ lệnh SELL có Return_Pct < 0 (bán lỗ / cut loss)
+    # trên tổng SELL trong cửa sổ
+    # Investor FOMO hay bán lỗ vì hoảng loạn
+    # -------------------------------------------------------
+    if len(sell_trades) == 0:
+        loss_sensitivity = 0.0
+    else:
+        loss_sells = (sell_trades['Return_Pct'] < 0).sum()
+        loss_sensitivity = loss_sells / len(sell_trades)
+
+    # -------------------------------------------------------
+    # PANIC SCORE (weighted sum, clamp to [0, 1])
+    # -------------------------------------------------------
+    panic_score = (
+        WEIGHTS['drawdown']         * drawdown +
+        WEIGHTS['sell_spike']       * sell_spike +
+        WEIGHTS['loss_sensitivity'] * loss_sensitivity
     )
-    
-    features = {'Investor_ID': investor_id}
-    
-    # Separate buy/sell
-    buy_trans = inv_trans[inv_trans['Action'] == 'BUY']
-    sell_trans = inv_trans[inv_trans['Action'] == 'SELL']
-    
-    # =============================================
-    # GROUP 1: CHASING BEHAVIOR (5 features)
-    # =============================================
-    
-    if len(buy_trans) > 0:
-        # F1: Explosion Buy Ratio (Core FOMO signal)
-        explosion_buys = (buy_trans['Market_Regime'] == 'EXPLOSION').sum()
-        features['explosion_buy_ratio'] = explosion_buys / len(buy_trans)
-        
-        # F2: Distribution Buy Ratio (Trap signal)
-        dist_buys = (buy_trans['Market_Regime'] == 'SIDEWAY_DISTRIBUTION').sum()
-        features['distribution_buy_ratio'] = dist_buys / len(buy_trans)
-        
-        # F3: Chasing Score (Combined)
-        features['chasing_score'] = features['explosion_buy_ratio'] + features['distribution_buy_ratio']
-        
-        # F4: Accumulation Buy Ratio (Good behavior)
-        accum_buys = (buy_trans['Market_Regime'] == 'SIDEWAY_ACCUMULATION').sum()
-        features['accumulation_buy_ratio'] = accum_buys / len(buy_trans)
-        
-        # F5: Panic Buy Ratio (Catching falling knife)
-        panic_buys = (buy_trans['Market_Regime'] == 'PANIC').sum()
-        features['panic_buy_ratio'] = panic_buys / len(buy_trans)
-    else:
-        features['explosion_buy_ratio'] = 0
-        features['distribution_buy_ratio'] = 0
-        features['chasing_score'] = 0
-        features['accumulation_buy_ratio'] = 0
-        features['panic_buy_ratio'] = 0
-    
-    # =============================================
-    # GROUP 2: TRADE ACCELERATION (4 features)
-    # =============================================
-    
-    # Get regime days
-    explosion_days = market_df[market_df['Market_Regime'] == 'EXPLOSION']['Date'].unique()
-    panic_days = market_df[market_df['Market_Regime'] == 'PANIC']['Date'].unique()
-    normal_days = market_df[market_df['Market_Regime'] == 'SIDEWAY_ACCUMULATION']['Date'].unique()
-    
-    # F6: Explosion Trade Acceleration
-    explosion_trades = inv_trans[inv_trans['Date'].isin(explosion_days)]
-    normal_trades = inv_trans[inv_trans['Date'].isin(normal_days)]
-    
-    trades_per_day_explosion = len(explosion_trades) / len(explosion_days) if len(explosion_days) > 0 else 0
-    trades_per_day_normal = len(normal_trades) / len(normal_days) if len(normal_days) > 0 else 0.01
-    
-    features['explosion_trade_acceleration'] = trades_per_day_explosion / trades_per_day_normal
-    
-    # F7: Panic Trade Acceleration
-    panic_trades = inv_trans[inv_trans['Date'].isin(panic_days)]
-    trades_per_day_panic = len(panic_trades) / len(panic_days) if len(panic_days) > 0 else 0
-    
-    features['panic_trade_acceleration'] = trades_per_day_panic / trades_per_day_normal
-    
-    # F8-9: Weekly Trade Volatility
-    inv_trans['Week'] = pd.to_datetime(inv_trans['Date']).dt.isocalendar().week
-    weekly_trades = inv_trans.groupby('Week').size()
-    
-    if len(weekly_trades) > 1:
-        features['trade_freq_std'] = weekly_trades.std()
-        features['trade_freq_cv'] = weekly_trades.std() / weekly_trades.mean()
-    else:
-        features['trade_freq_std'] = 0
-        features['trade_freq_cv'] = 0
-    
-    # =============================================
-    # GROUP 3: HOLDING INCONSISTENCY (4 features)
-    # =============================================
-    
-    if len(sell_trans) > 0:
-        # F10: Premature Exit Rate (Sell with profit < 5%)
-        premature_exits = ((sell_trans['Return_Pct'] > 0) & (sell_trans['Return_Pct'] < 0.05)).sum()
-        features['premature_exit_rate'] = premature_exits / len(sell_trans)
-        
-        # F11: Explosion Sell Ratio (Sell during hot market)
-        explosion_sells = (sell_trans['Market_Regime'] == 'EXPLOSION').sum()
-        features['explosion_sell_ratio'] = explosion_sells / len(sell_trans)
-    else:
-        features['premature_exit_rate'] = 0
-        features['explosion_sell_ratio'] = 0
-    
-    # F12-13: Holding Period
-    holding_periods = []
-    for ticker in inv_trans['Ticker'].unique():
-        ticker_trans = inv_trans[inv_trans['Ticker'] == ticker].sort_values('Date')
-        buys = ticker_trans[ticker_trans['Action'] == 'BUY']
-        sells = ticker_trans[ticker_trans['Action'] == 'SELL']
-        
-        for buy_date in buys['Date'].values:
-            next_sell = sells[sells['Date'] > buy_date]
-            if len(next_sell) > 0:
-                sell_date = next_sell.iloc[0]['Date']
-                holding_days = (pd.to_datetime(sell_date) - pd.to_datetime(buy_date)).days
-                holding_periods.append(holding_days)
-    
-    features['avg_holding_period'] = np.mean(holding_periods) if len(holding_periods) > 0 else 0
-    
-    quick_sells = [hp for hp in holding_periods if hp <= 3]
-    features['quick_sell_ratio'] = len(quick_sells) / len(holding_periods) if len(holding_periods) > 0 else 0
-    
-    # =============================================
-    # GROUP 4: DRAWDOWN SENSITIVITY (4 features)
-    # =============================================
-    
-    if len(inv_port) > 0:
-        inv_port = inv_port.sort_values('Date')
-        inv_port['Cummax'] = inv_port['Total_Asset'].cummax()
-        inv_port['Drawdown'] = (inv_port['Total_Asset'] - inv_port['Cummax']) / inv_port['Cummax']
-        
-        # F14: Max Drawdown
-        features['max_drawdown'] = inv_port['Drawdown'].min()
-        
-        # F15: Trade When Drawdown > 10%
-        deep_drawdown_days = inv_port[inv_port['Drawdown'] < -0.10]['Date'].values
-        trades_during_drawdown = inv_trans[inv_trans['Date'].isin(deep_drawdown_days)]
-        
-        features['drawdown_trade_count'] = len(trades_during_drawdown)
-        features['drawdown_trade_ratio'] = len(trades_during_drawdown) / len(inv_trans)
-        
-        # F16: Panic Sell During Drawdown
-        panic_sells_in_dd = trades_during_drawdown[
-            (trades_during_drawdown['Action'] == 'SELL') & 
-            (trades_during_drawdown['Market_Regime'] == 'PANIC')
-        ]
-        
-        features['drawdown_panic_sell_ratio'] = (
-            len(panic_sells_in_dd) / len(trades_during_drawdown) 
-            if len(trades_during_drawdown) > 0 else 0
-        )
-    else:
-        features['max_drawdown'] = 0
-        features['drawdown_trade_count'] = 0
-        features['drawdown_trade_ratio'] = 0
-        features['drawdown_panic_sell_ratio'] = 0
-    
-    # =============================================
-    # GROUP 5: PERFORMANCE METRICS (6 features)
-    # =============================================
-    
-    # F17: Total Trades
-    features['total_trades'] = len(inv_trans)
-    
-    # F18: Buy/Sell Ratio
-    features['buy_sell_ratio'] = len(buy_trans) / len(sell_trans) if len(sell_trans) > 0 else 0
-    
-    if len(sell_trans) > 0:
-        # F19: Win Rate
-        features['win_rate'] = (sell_trans['Return_Pct'] > 0).sum() / len(sell_trans)
-        
-        # F20-21: Avg Profit/Loss
-        winning_trades = sell_trans[sell_trans['Return_Pct'] > 0]
-        losing_trades = sell_trans[sell_trans['Return_Pct'] < 0]
-        
-        features['avg_profit'] = winning_trades['Return_Pct'].mean() if len(winning_trades) > 0 else 0
-        features['avg_loss'] = losing_trades['Return_Pct'].mean() if len(losing_trades) > 0 else 0
-        
-        # F22: Risk-Reward Ratio
-        features['risk_reward_ratio'] = (
-            abs(features['avg_profit'] / features['avg_loss']) 
-            if features['avg_loss'] != 0 else 0
-        )
-    else:
-        features['win_rate'] = 0
-        features['avg_profit'] = 0
-        features['avg_loss'] = 0
-        features['risk_reward_ratio'] = 0
-    
-    # =============================================
-    # GROUP 6: PORTFOLIO METRICS (2 features)
-    # =============================================
-    
-    if len(inv_port) > 0:
-        # F23: Sharpe Ratio
-        inv_port['Daily_Return'] = inv_port['Total_Asset'].pct_change()
-        sharpe = (
-            inv_port['Daily_Return'].mean() / inv_port['Daily_Return'].std() 
-            if inv_port['Daily_Return'].std() > 0 else 0
-        )
-        features['sharpe_ratio'] = sharpe
-        
-        # F24: Total Return
-        initial = inv_port['Total_Asset'].iloc[0]
-        final = inv_port['Total_Asset'].iloc[-1]
-        features['total_return'] = (final - initial) / initial
-    else:
-        features['sharpe_ratio'] = 0
-        features['total_return'] = 0
-    
-    return features
+    panic_score = float(np.clip(panic_score, 0.0, 1.0))
+
+    return {
+        'DrawdownLevel':    round(drawdown, 4),
+        'SellSpike':        round(sell_spike, 4),
+        'LossSensitivity':  round(loss_sensitivity, 4),
+        'PanicScore':       round(panic_score, 4),
+    }
 
 
-def build_feature_dataset():
-    """
-    Tạo dataset features cho tất cả investors
-    """
-    print(" Đang kết nối database...")
-    engine = create_engine(DB_CONNECTION_STR)
-    
-    # Load data
-    print(" Đang tải dữ liệu...")
-    transactions_df = pd.read_sql("SELECT * FROM transactions", engine)
-    portfolio_df = pd.read_sql("SELECT * FROM portfolio_history", engine)
-    market_df = pd.read_sql("SELECT * FROM Simulation_Market_Regimes", engine)
-    investors_df = pd.read_sql("SELECT Investor_ID, Investor_Type FROM investors", engine)
-    
-    print(" Đang chuẩn hóa định dạng ngày tháng...")
-    transactions_df['Date'] = pd.to_datetime(transactions_df['Date'])
-    portfolio_df['Date'] = pd.to_datetime(portfolio_df['Date'])
-    market_df['Date'] = pd.to_datetime(market_df['Date'])
-    
-    print(f" Đã tải: {len(transactions_df)} transactions, {len(investors_df)} investors")
-    
-    # Tính features
-    print("\n Đang tính features cho từng investor...")
-    feature_list = []
-    
-    from tqdm import tqdm
-    for _, investor in tqdm(investors_df.iterrows(), total=len(investors_df)):
-        inv_id = investor['Investor_ID']
-        
-        features = calculate_behavioral_features(
-            inv_id, transactions_df, portfolio_df, market_df
+# ============================================================
+# BUILD TOÀN BỘ DATASET & PUSH VÀO DB
+# ============================================================
+def build_and_push_behavior_signals(engine):
+    investors_df, trades_df, portfolios_df = load_data(engine)
+
+    # Chọn ngày quan sát: ngày cuối cùng trong portfolio history
+    # (hoặc có thể chạy theo từng tháng nếu muốn)
+    last_date = portfolios_df['TradeDate'].max()
+    obs_date  = last_date
+    print(f"\n📅 Ngày quan sát: {obs_date.date()}")
+
+    # --- Tính signals cho từng investor ---
+    records = []
+    print("\n⚙️  Đang tính BehaviorSignals cho từng investor...")
+
+    for _, row in tqdm(investors_df.iterrows(), total=len(investors_df)):
+        inv_id = row['InvestorID']
+        signals = compute_signals_for_investor(
+            inv_id, obs_date, trades_df, portfolios_df
         )
-        
-        if features:
-            features['Investor_Type'] = investor['Investor_Type']
-            feature_list.append(features)
-    
-    # Tạo DataFrame
-    feature_df = pd.DataFrame(feature_list)
-    
-    # Sắp xếp lại columns
-    label_col = ['Investor_ID', 'Investor_Type']
-    feature_cols = [col for col in feature_df.columns if col not in label_col]
-    feature_df = feature_df[label_col + feature_cols]
-    
-    # Lưu file
-    output_path = DATA_RAW_DIR / 'behavioral_features.csv'
-    feature_df.to_csv(output_path, index=False)
-    
-    print(f"\n Đã tạo {len(feature_df)} investor features!")
-    print(f"💾 File saved: {output_path}")
-    print(f"📏 Số features: {len(feature_cols)}")
-    
-    # Summary
-    print("\n FEATURE SUMMARY:")
-    print(feature_df[label_col + feature_cols[:5]].head())
-    
-    print("\n DISTRIBUTION BY TYPE:")
-    print(feature_df['Investor_Type'].value_counts())
-    
-    return feature_df
+        if signals is None:
+            continue
+
+        records.append({
+            'InvestorID':      inv_id,
+            'ObservationDate': obs_date.date(),
+            **signals
+        })
+
+    if not records:
+        print("⚠️  Không có dữ liệu đủ để tính signals. Kiểm tra lại DB.")
+        return
+
+    df_signals = pd.DataFrame(records)
+
+    print(f"\n📊 Kết quả tính toán ({len(df_signals)} investors):")
+    print(df_signals[['InvestorID', 'DrawdownLevel', 'SellSpike',
+                       'LossSensitivity', 'PanicScore']].describe().round(4))
+
+    # --- Thống kê PanicLevel ---
+    df_signals['PanicLevel'] = df_signals['PanicScore'].apply(
+        lambda s: 'High' if s >= 0.80 else ('Medium' if s >= 0.65 else 'Low')
+    )
+    print("\n📈 Phân phối PanicLevel:")
+    print(df_signals['PanicLevel'].value_counts())
+
+    # --- Lưu CSV để backup ---
+    csv_path = DATA_RAW_DIR / 'behavior_signals.csv'
+    df_signals.to_csv(csv_path, index=False)
+    print(f"\n💾 Đã lưu CSV: {csv_path}")
+
+    # --- Push vào MySQL ---
+    print("\n🚀 Đang đẩy vào bảng BehaviorSignals (trigger sẽ tự fill Warnings)...")
+    cols_to_db = [
+        'InvestorID', 'ObservationDate',
+        'DrawdownLevel', 'SellSpike', 'LossSensitivity', 'PanicScore'
+    ]
+    df_to_db = df_signals[cols_to_db]
+
+    with engine.begin() as conn:
+        # Xóa data cũ của ngày này để tránh duplicate
+        conn.execute(
+            text("DELETE FROM BehaviorSignals WHERE ObservationDate = :d"),
+            {"d": str(obs_date.date())}
+        )
+        df_to_db.to_sql(
+            'BehaviorSignals',
+            con=conn,
+            if_exists='append',
+            index=False,
+            chunksize=500
+        )
+
+    # --- Kiểm tra Warnings được tạo tự động ---
+    with engine.connect() as conn:
+        warning_count = conn.execute(
+            text("SELECT COUNT(*) FROM Warnings WHERE WarningDate = :d"),
+            {"d": str(obs_date.date())}
+        ).scalar()
+
+    print(f"\n✅ Đã push {len(df_to_db)} BehaviorSignals")
+    print(f"🔔 Trigger đã tạo {warning_count} Warnings tự động")
+    print("\n🎉 HOÀN TẤT!")
 
 
+# ============================================================
+# MAIN
+# ============================================================
 if __name__ == "__main__":
-    feature_df = build_feature_dataset()
+    engine = create_engine(DB_CONNECTION_STR)
+    build_and_push_behavior_signals(engine)

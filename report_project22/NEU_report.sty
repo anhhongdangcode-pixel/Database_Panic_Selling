@@ -1,0 +1,107 @@
+%% NEU_report.sty
+%% Style file for NEU DATCOM Lab Project Report
+%% Introduction to Database — Project 22
+
+%% --- Page Layout ---
+\usepackage[a4paper, margin=1.2in]{geometry}
+
+%% --- Font ---
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\renewcommand*\familydefault{\sfdefault}
+
+%% --- Math ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+%% --- Graphics & Figures ---
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+
+%% --- Tables ---
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{array}
+\usepackage{longtable}
+
+%% --- Code Listings ---
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0.1}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codeblue}{rgb}{0.10,0.00,1.00}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+
+\lstdefinestyle{sqlstyle}{
+    language=SQL,
+    backgroundcolor=\color{gray!8},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codeblue}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{gray!40}
+}
+
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{gray!8},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codeblue}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{gray!40}
+}
+
+\lstset{style=sqlstyle} % default style
+
+%% --- Colors for boxes ---
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
+
+%% --- Hyperlinks ---
+\usepackage[hidelinks]{hyperref}
+\definecolor{DarkBlue}{rgb}{0.00,0.00,0.50}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=DarkBlue,
+    urlcolor=cyan,
+    citecolor=DarkBlue,
+    pdftitle={Project 22 - Panic Selling Detection}
+}
+
+%% --- Header/Footer ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\leftmark}
+\fancyhead[R]{\small Project 22 — Panic Selling Detection}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+%% --- Misc ---
+\usepackage{enumitem}
+\usepackage{lipsum}
+\usepackage[nottoc]{tocbibind}

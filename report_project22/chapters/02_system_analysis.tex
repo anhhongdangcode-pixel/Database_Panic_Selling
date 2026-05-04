@@ -1,0 +1,72 @@
+\chapter{System Analysis and Requirements}
+\label{chap:analysis}
+
+\section{Problem Statement}
+
+% TODO: Describe the panic selling problem in more detail
+% - What triggers panic selling?
+% - Why is early detection valuable?
+% - What data signals indicate panic selling behavior?
+
+[Describe the panic selling problem here. Explain what behavioral signals are observable in transaction data, and why early warning systems are valuable for advisory applications.]
+
+\section{Functional Requirements}
+
+The system must support the following core functionalities:
+
+\begin{enumerate}
+    \item \textbf{Investor data management:} Store and manage investor profiles including psychological parameters (chasing bias, loss aversion, risk appetite, impatience).
+    \item \textbf{Synthetic data generation:} Generate realistic market data and investor trading histories reflecting market stress scenarios.
+    \item \textbf{Behavioral feature extraction:} Compute indicators including drawdown level, sell spike intensity, and loss sensitivity from transaction histories.
+    \item \textbf{Panic score estimation:} Aggregate behavioral features into a normalized Panic Score (0.0 to 1.0) per investor.
+    \item \textbf{Warning generation:} Automatically classify investors into Low, Medium, and High panic levels and generate advisory warnings.
+    \item \textbf{Reporting:} Produce reports on score distributions, warning levels, and behavioral signals per investor.
+\end{enumerate}
+
+\section{Non-Functional Requirements}
+
+\begin{itemize}
+    \item \textbf{Performance:} Queries on large transaction tables (500k+ rows) must complete within acceptable time through proper indexing.
+    \item \textbf{Scalability:} The schema should support extension to additional tickers and longer time horizons.
+    \item \textbf{Maintainability:} All database logic encapsulated in stored procedures and functions for easy updates.
+    \item \textbf{Security:} Role-based access control separating administrative, analytical, and read-only users.
+\end{itemize}
+
+\section{System Architecture Overview}
+
+% TODO: Add a system architecture diagram here
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.85\textwidth]{figures/system_architecture.png}
+%     \caption{System Architecture Overview}
+%     \label{fig:architecture}
+% \end{figure}
+
+The system consists of three main layers:
+
+\begin{enumerate}
+    \item \textbf{Data Layer:} MySQL database storing all investor, market, transaction, portfolio, behavioral signal, and warning data.
+    \item \textbf{Analytics Layer:} Python scripts for data generation, feature engineering, and Panic Score computation.
+    \item \textbf{Presentation Layer:} Flask web application providing an interactive interface for querying and monitoring investor behavior.
+\end{enumerate}
+
+\section{Market Regime Classification}
+
+A key component of the system is the classification of market conditions into four regimes used to drive investor behavior simulation:
+
+\begin{table}[H]
+    \centering
+    \caption{Market Regime Definitions}
+    \label{tab:regimes}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Regime} & \textbf{Condition} & \textbf{Implication} \\
+        \midrule
+        EXPLOSION & Daily return $> +2\%$ & Strong upward momentum \\
+        PANIC & Daily return $< -2\%$ & Sharp downward pressure \\
+        SIDEWAY\_ACCUMULATION & Future 5D return $> +3\%$ & Pre-rally consolidation \\
+        SIDEWAY\_DISTRIBUTION & Future 5D return $< -3\%$ & Pre-drop distribution \\
+        SIDEWAY\_NOISE & Otherwise & No clear directional signal \\
+        \bottomrule
+    \end{tabular}
+\end{table}

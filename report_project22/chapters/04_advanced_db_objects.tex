@@ -1,0 +1,299 @@
+\chapter{Advanced Database Objects and Optimization}
+\label{chap:advanced}
+
+\section{Indexes}
+
+Indexes are created on columns frequently used in \texttt{WHERE}, \texttt{JOIN}, and \texttt{ORDER BY} clauses to reduce full-table scan costs on large tables.
+
+\begin{lstlisting}[style=sqlstyle, caption={Index Definitions}]
+-- Speed up investor lookups in transaction queries
+CREATE INDEX idx_trans_investor  ON Transactions(Investor_ID);
+CREATE INDEX idx_trans_date      ON Transactions(Date);
+CREATE INDEX idx_trans_ticker    ON Transactions(Ticker);
+
+-- Composite index for portfolio history range queries
+CREATE INDEX idx_port_investor_date 
+    ON Portfolio_History(Investor_ID, Date);
+
+-- Speed up BehaviorSignals queries by investor
+CREATE INDEX idx_signal_investor 
+    ON BehaviorSignals(InvestorID, ObservationDate);
+\end{lstlisting}
+
+% TODO: Add EXPLAIN output screenshot showing index usage
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.9\textwidth]{figures/explain_output.png}
+%     \caption{EXPLAIN output before and after index creation}
+% \end{figure}
+
+\section{Views}
+
+Three views are defined to support common reporting queries and dashboard data feeds.
+
+\subsection{Investor Selling Summary}
+
+\begin{lstlisting}[style=sqlstyle, caption={View: vw\_investor\_sell\_summary}]
+CREATE VIEW vw_investor_sell_summary AS
+SELECT 
+    t.Investor_ID,
+    i.Investor_Type,
+    COUNT(CASE WHEN t.Action = 'SELL' THEN 1 END)   AS Total_Sells,
+    COUNT(CASE WHEN t.Action = 'BUY'  THEN 1 END)   AS Total_Buys,
+    COUNT(*)                                          AS Total_Trades,
+    ROUND(COUNT(CASE WHEN t.Action = 'SELL' THEN 1 END) 
+          / COUNT(*) * 100, 2)                        AS Sell_Ratio_Pct,
+    AVG(bs.PanicScore)                                AS Avg_PanicScore
+FROM Transactions t
+JOIN Investors i ON t.Investor_ID = i.Investor_ID
+LEFT JOIN BehaviorSignals bs ON t.Investor_ID = bs.InvestorID
+GROUP BY t.Investor_ID, i.Investor_Type;
+\end{lstlisting}
+
+\subsection{Abnormal Sell Periods}
+
+\begin{lstlisting}[style=sqlstyle, caption={View: vw\_abnormal\_sell\_periods}]
+CREATE VIEW vw_abnormal_sell_periods AS
+SELECT 
+    Date,
+    Ticker,
+    COUNT(*)                            AS Sell_Count,
+    SUM(Quantity * Price)               AS Total_Sell_Value
+FROM Transactions
+WHERE Action = 'SELL'
+  AND Reason LIKE 'PANIC%'
+GROUP BY Date, Ticker
+HAVING Sell_Count > (
+    SELECT AVG(cnt) + 2 * STDDEV(cnt)
+    FROM (
+        SELECT Date, COUNT(*) AS cnt
+        FROM Transactions
+        WHERE Action = 'SELL'
+        GROUP BY Date
+    ) sub
+);
+\end{lstlisting}
+
+\subsection{Warning Dashboard}
+
+\begin{lstlisting}[style=sqlstyle, caption={View: vw\_warning\_dashboard}]
+CREATE VIEW vw_warning_dashboard AS
+SELECT 
+    w.WarningID,
+    w.InvestorID,
+    i.Name,
+    i.Investor_Type,
+    w.WarningDate,
+    w.PanicLevel,
+    w.Confidence,
+    w.KeySignals,
+    bs.DrawdownLevel,
+    bs.SellSpike,
+    bs.PanicScore
+FROM Warnings w
+JOIN Investors i        ON w.InvestorID = i.Investor_ID
+JOIN BehaviorSignals bs ON w.InvestorID = bs.InvestorID
+    AND w.WarningDate = bs.ObservationDate
+ORDER BY w.PanicScore DESC, w.WarningDate DESC;
+\end{lstlisting}
+
+\section{User-Defined Functions}
+
+Three UDFs encapsulate the core behavioral metric calculations.
+
+\subsection{Rolling Drawdown}
+
+\begin{lstlisting}[style=sqlstyle, caption={UDF: fn\_rolling\_drawdown}]
+DELIMITER $$
+CREATE FUNCTION fn_rolling_drawdown(
+    p_investor_id VARCHAR(20),
+    p_end_date    DATE,
+    p_days        INT
+) RETURNS FLOAT DETERMINISTIC
+BEGIN
+    DECLARE v_peak  FLOAT;
+    DECLARE v_final FLOAT;
+    
+    SELECT MAX(Total_Asset) INTO v_peak
+    FROM Portfolio_History
+    WHERE Investor_ID = p_investor_id
+      AND Date BETWEEN DATE_SUB(p_end_date, INTERVAL p_days DAY) 
+                   AND p_end_date;
+    
+    SELECT Total_Asset INTO v_final
+    FROM Portfolio_History
+    WHERE Investor_ID = p_investor_id
+      AND Date = p_end_date
+    LIMIT 1;
+    
+    IF v_peak IS NULL OR v_peak = 0 THEN RETURN 0.0; END IF;
+    RETURN ROUND((v_peak - v_final) / v_peak, 4);
+END$$
+DELIMITER ;
+\end{lstlisting}
+
+\subsection{Sell Intensity}
+
+\begin{lstlisting}[style=sqlstyle, caption={UDF: fn\_sell\_intensity}]
+DELIMITER $$
+CREATE FUNCTION fn_sell_intensity(
+    p_investor_id VARCHAR(20),
+    p_start_date  DATE,
+    p_end_date    DATE
+) RETURNS FLOAT DETERMINISTIC
+BEGIN
+    DECLARE v_panic_sells INT;
+    DECLARE v_total_trades INT;
+    
+    SELECT COUNT(*) INTO v_panic_sells
+    FROM Transactions
+    WHERE Investor_ID = p_investor_id
+      AND Action = 'SELL'
+      AND Reason LIKE 'PANIC%'
+      AND Date BETWEEN p_start_date AND p_end_date;
+    
+    SELECT COUNT(*) INTO v_total_trades
+    FROM Transactions
+    WHERE Investor_ID = p_investor_id
+      AND Date BETWEEN p_start_date AND p_end_date;
+    
+    IF v_total_trades = 0 THEN RETURN 0.0; END IF;
+    RETURN ROUND(v_panic_sells / v_total_trades, 4);
+END$$
+DELIMITER ;
+\end{lstlisting}
+
+\subsection{Panic Score Aggregation}
+
+\begin{lstlisting}[style=sqlstyle, caption={UDF: fn\_panic\_score\_agg}]
+DELIMITER $$
+CREATE FUNCTION fn_panic_score_agg(
+    p_drawdown        FLOAT,
+    p_sell_intensity  FLOAT,
+    p_loss_sensitivity FLOAT
+) RETURNS FLOAT DETERMINISTIC
+BEGIN
+    -- Weighted sum: drawdown 40%, sell intensity 40%, loss sensitivity 20%
+    DECLARE v_score FLOAT;
+    SET v_score = (p_drawdown * 0.4) 
+                + (p_sell_intensity * 0.4) 
+                + (p_loss_sensitivity * 0.2);
+    -- Clamp to [0, 1]
+    IF v_score > 1.0 THEN SET v_score = 1.0; END IF;
+    IF v_score < 0.0 THEN SET v_score = 0.0; END IF;
+    RETURN ROUND(v_score, 4);
+END$$
+DELIMITER ;
+\end{lstlisting}
+
+\section{Trigger}
+
+The trigger automatically inserts a warning record when a new BehaviorSignal is inserted with a Panic Score exceeding 0.65.
+
+\begin{lstlisting}[style=sqlstyle, caption={Trigger: trg\_panic\_warning}]
+DELIMITER $$
+CREATE TRIGGER trg_panic_warning
+AFTER INSERT ON BehaviorSignals
+FOR EACH ROW
+BEGIN
+    IF NEW.PanicScore >= 0.65 THEN
+        INSERT INTO Warnings (
+            InvestorID, WarningDate, PanicLevel, Confidence, KeySignals
+        )
+        VALUES (
+            NEW.InvestorID,
+            NEW.ObservationDate,
+            CASE 
+                WHEN NEW.PanicScore >= 0.80 THEN 'High'
+                WHEN NEW.PanicScore >= 0.65 THEN 'Medium'
+                ELSE 'Low'
+            END,
+            ROUND(NEW.PanicScore, 4),
+            JSON_OBJECT(
+                'drawdown',        NEW.DrawdownLevel,
+                'sell_spike',      NEW.SellSpike,
+                'loss_sensitivity', NEW.LossSensitivity,
+                'panic_score',     NEW.PanicScore
+            )
+        );
+    END IF;
+END$$
+DELIMITER ;
+\end{lstlisting}
+
+\section{Stored Procedures}
+
+\subsection{Refresh Behavior Signals}
+
+\begin{lstlisting}[style=sqlstyle, caption={SP: sp\_refresh\_behavior\_signals}]
+DELIMITER $$
+CREATE PROCEDURE sp_refresh_behavior_signals(
+    IN p_investor_id VARCHAR(20),
+    IN p_obs_date    DATE
+)
+BEGIN
+    DECLARE v_drawdown       FLOAT;
+    DECLARE v_sell_intensity FLOAT;
+    DECLARE v_loss_sens      FLOAT;
+    DECLARE v_panic_score    FLOAT;
+    DECLARE v_start_date     DATE;
+    
+    SET v_start_date = DATE_SUB(p_obs_date, INTERVAL 30 DAY);
+    
+    -- Calculate each component using UDFs
+    SET v_drawdown       = fn_rolling_drawdown(p_investor_id, p_obs_date, 30);
+    SET v_sell_intensity = fn_sell_intensity(p_investor_id, v_start_date, p_obs_date);
+    SET v_loss_sens      = fn_sell_intensity(p_investor_id, v_start_date, p_obs_date);
+    SET v_panic_score    = fn_panic_score_agg(v_drawdown, v_sell_intensity, v_loss_sens);
+    
+    -- Insert or update BehaviorSignals (trigger fires automatically)
+    INSERT INTO BehaviorSignals 
+        (InvestorID, ObservationDate, DrawdownLevel, SellSpike, LossSensitivity, PanicScore)
+    VALUES 
+        (p_investor_id, p_obs_date, v_drawdown, v_sell_intensity, v_loss_sens, v_panic_score)
+    ON DUPLICATE KEY UPDATE
+        DrawdownLevel   = v_drawdown,
+        SellSpike       = v_sell_intensity,
+        LossSensitivity = v_loss_sens,
+        PanicScore      = v_panic_score;
+END$$
+DELIMITER ;
+\end{lstlisting}
+
+\subsection{Simulate New Transactions (Demo)}
+
+\begin{lstlisting}[style=sqlstyle, caption={SP: sp\_simulate\_new\_transactions}]
+DELIMITER $$
+CREATE PROCEDURE sp_simulate_new_transactions(
+    IN p_investor_id VARCHAR(20),
+    IN p_n_trades    INT
+)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE v_action VARCHAR(10);
+    DECLARE v_ticker VARCHAR(10);
+    DECLARE v_price  FLOAT;
+    
+    WHILE i < p_n_trades DO
+        -- Random SELL-heavy simulation to trigger panic detection
+        SET v_action = IF(RAND() < 0.7, 'SELL', 'BUY');
+        SET v_ticker = ELT(FLOOR(1 + RAND() * 9), 
+                           'VIC','VHM','HPG','FPT','VCB',
+                           'SSI','VPB','BCM','MSN');
+        SET v_price  = 20000 + RAND() * 80000;
+        
+        INSERT INTO Transactions 
+            (Trans_ID, Investor_ID, Date, Ticker, Action, Price, Quantity, Reason)
+        VALUES (
+            UUID(), p_investor_id, CURDATE(), v_ticker, v_action,
+            ROUND(v_price, 2), FLOOR(100 + RAND() * 900), 
+            CONCAT('PANIC_', v_action)
+        );
+        SET i = i + 1;
+    END WHILE;
+    
+    -- Recalculate signals → trigger fires → warning auto-inserted
+    CALL sp_refresh_behavior_signals(p_investor_id, CURDATE());
+END$$
+DELIMITER ;
+\end{lstlisting}

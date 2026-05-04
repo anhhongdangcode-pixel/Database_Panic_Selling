@@ -1,0 +1,81 @@
+\chapter{Database Security and Administration}
+\label{chap:security}
+
+\section{User Roles and Permissions}
+
+Three database user roles are defined following the principle of least privilege:
+
+\begin{table}[H]
+    \centering
+    \caption{Database User Roles and Permissions}
+    \begin{tabular}{llp{7cm}}
+        \toprule
+        \textbf{Role} & \textbf{Username} & \textbf{Permissions} \\
+        \midrule
+        Administrator & \texttt{db\_admin} & Full privileges: CREATE, DROP, ALTER, INSERT, UPDATE, DELETE, SELECT, GRANT \\
+        Analyst & \texttt{db\_analyst} & SELECT on all tables, EXECUTE on stored procedures and UDFs \\
+        App User & \texttt{db\_app} & SELECT, INSERT on Transactions and BehaviorSignals; EXECUTE procedures \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{lstlisting}[style=sqlstyle, caption={Role Configuration}]
+-- Create analyst role (read-only access for reporting)
+CREATE USER 'db_analyst'@'localhost' IDENTIFIED BY 'analyst_pass';
+GRANT SELECT ON fomo_project.* TO 'db_analyst'@'localhost';
+GRANT EXECUTE ON PROCEDURE fomo_project.sp_refresh_behavior_signals 
+    TO 'db_analyst'@'localhost';
+
+-- Create app user (limited write access)
+CREATE USER 'db_app'@'localhost' IDENTIFIED BY 'app_pass';
+GRANT SELECT, INSERT ON fomo_project.Transactions TO 'db_app'@'localhost';
+GRANT SELECT ON fomo_project.vw_warning_dashboard TO 'db_app'@'localhost';
+GRANT EXECUTE ON PROCEDURE fomo_project.sp_simulate_new_transactions 
+    TO 'db_app'@'localhost';
+
+FLUSH PRIVILEGES;
+\end{lstlisting}
+
+\section{Data Security Considerations}
+
+Although this project uses a synthetic dataset, the following security measures are proposed for a production deployment:
+
+\begin{itemize}
+    \item \textbf{Encryption at rest:} Enable MySQL InnoDB tablespace encryption for tables containing investor profiles.
+    \item \textbf{Encryption in transit:} Enforce TLS/SSL for all client-server connections.
+    \item \textbf{Password policies:} Enforce strong password requirements using MySQL \texttt{validate\_password} plugin.
+    \item \textbf{Connection string security:} Store credentials in environment variables via \texttt{.env} files (implemented in \texttt{config.py}), never hardcoded.
+    \item \textbf{Audit logging:} Enable MySQL General Query Log for administrative actions.
+\end{itemize}
+
+\section{Backup and Recovery}
+
+\begin{lstlisting}[language=bash, caption={Backup Procedure using mysqldump}]
+# Full database backup
+mysqldump -u db_admin -p fomo_project \
+    --single-transaction \
+    --routines \
+    --triggers \
+    > backup_fomo_$(date +%Y%m%d).sql
+
+# Restore from backup
+mysql -u db_admin -p fomo_project < backup_fomo_20260101.sql
+\end{lstlisting}
+
+A recommended backup schedule:
+\begin{itemize}
+    \item Full backup: weekly
+    \item Incremental backup (binary log): daily
+    \item Retention period: 30 days
+\end{itemize}
+
+\section{Performance Optimization}
+
+Beyond indexing (covered in Chapter~\ref{chap:advanced}), the following optimizations are applied:
+
+\begin{itemize}
+    \item \textbf{InnoDB buffer pool:} Sized to accommodate the full Portfolio\_History table in memory for fast range scans.
+    \item \textbf{Query caching via views:} Frequently accessed join queries are encapsulated in views to simplify the query planner's work.
+    \item \textbf{Chunked inserts:} Simulation data is inserted in batches of 1,000 rows using SQLAlchemy's \texttt{chunksize} parameter.
+    \item \textbf{EXPLAIN analysis:} All major queries were verified with \texttt{EXPLAIN} to confirm index usage and avoid full table scans.
+\end{itemize}

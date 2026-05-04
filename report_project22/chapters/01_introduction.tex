@@ -1,0 +1,27 @@
+\chapter{Introduction}
+
+\section{Background and Motivation}
+
+Individual investors in emerging markets such as Vietnam are frequently observed engaging in emotionally driven trading behavior, particularly during periods of market volatility. One of the most damaging behavioral patterns is \textit{panic selling} — the rapid liquidation of holdings in response to short-term price declines, often resulting in realized losses that would have been avoided through rational, long-term decision making.
+
+The Vietnamese stock market, characterized by a high proportion of retail investors and relatively low institutional participation, presents a compelling environment for studying such behavioral anomalies. Understanding and detecting panic selling in real time can provide significant value for advisory systems, risk management tools, and investor education platforms.
+
+\section{Project Objectives}
+
+The primary objective of this project is to develop a database-driven system capable of:
+
+\begin{itemize}
+    \item Generating a realistic synthetic dataset of investor transaction histories and portfolio dynamics.
+    \item Extracting behavioral features that characterize panic selling tendencies from transaction data.
+    \item Computing a quantitative Panic Score for each investor based on extracted features.
+    \item Classifying investors into warning levels (Low, Medium, High) for advisory support.
+    \item Demonstrating all functionality through a Python application with a web-based interface.
+\end{itemize}
+
+\section{Scope}
+
+The system covers nine Vietnamese stock tickers (VIC, VHM, HPG, FPT, VCB, SSI, VPB, BCM, MSN) and simulates trading activity across the year 2025. All data used in this project is synthetically generated; no real investor personal data is used.
+
+\section{Report Structure}
+
+The remainder of this report is organized as follows. Chapter~\ref{chap:analysis} presents the system analysis and requirements. Chapter~\ref{chap:dbdesign} describes the database design and schema. Chapter~\ref{chap:advanced} covers advanced database objects. Chapter~\ref{chap:python} documents the Python application. Chapter~\ref{chap:security} addresses security and administration. Chapter~\ref{chap:results} presents results and demo outputs. Chapter~\ref{chap:conclusion} concludes with recommendations.
