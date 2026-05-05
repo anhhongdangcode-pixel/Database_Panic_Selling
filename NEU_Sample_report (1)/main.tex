@@ -1,0 +1,19 @@
+\documentclass[a4paper]{article}
+\usepackage{neu}
+
+\usepackage[backend=bibtex,style=numeric]{biblatex}
+\addbibresource{main.bib}
+
+\begin{document}
+
+\include{Sections/1-Title}
+\include{Sections/2-Introduction}        % C1: problem, objectives, scope
+\include{Sections/3-DatabaseDesign}      % C2: ER diagram, schema, advanced objects
+\include{Sections/4-Implementation}      % C3: Python pipeline, simulation, next day
+\include{Sections/5-Advanced-Objects-Security}            % C2/C3: advanced objects, roles, backup, security
+\include{Sections/6-ResultAnalysis}      % C4: demo, charts, evaluation
+\include{Sections/7-Conclusion}          % C4/C5: conclusion, limitations, future work
+
+\printbibliography
+
+\end{document}

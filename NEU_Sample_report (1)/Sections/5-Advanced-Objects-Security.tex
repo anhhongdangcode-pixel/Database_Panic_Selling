@@ -1,0 +1,136 @@
+
+\section{Database Optimization and Advanced Objects}
+
+\subsection{Indexes}
+Following the simulation phase, the dataset scales to approximately 240,000 rows in \texttt{Portfolios}, 48,000 rows in \texttt{Trades}, and 210,000 rows in \texttt{BehaviorSignals}. The User-Defined Functions (UDFs) and Views execute continuous filtering queries based on \texttt{InvestorID} and \texttt{TradeDate}. Without indexing, these queries trigger full table scans, severely degrading the performance of the \texttt{sp\_daily\_eod\_process} as it loops through 300 investors daily. 
+
+We implemented the following indexing strategy to optimize read operations:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Index Name} & \textbf{Table} & \textbf{Purpose} \\ \hline
+\texttt{idx\_trades\_investor} & Trades & Filter queries by investor \\ \hline
+\texttt{idx\_trades\_date} & Trades & Filter queries by trade date \\ \hline
+\texttt{idx\_trades\_investor\_date} & Trades & Optimize sliding window in UDFs \\ \hline
+\texttt{idx\_trades\_reason} & Trades & Optimize \texttt{LIKE '\%PANIC\%'} text searches \\ \hline
+\texttt{idx\_trades\_ticker} & Trades & Filter queries by stock ticker \\ \hline
+\texttt{idx\_portfolios\_investor} & Portfolios & Filter queries by investor \\ \hline
+\texttt{idx\_portfolios\_investor\_date} & Portfolios & Optimize sliding window in UDFs \\ \hline
+\texttt{idx\_behavior\_investor} & BehaviorSignals & Filter queries by investor \\ \hline
+\texttt{idx\_behavior\_date} & BehaviorSignals & Filter queries by observation date \\ \hline
+\texttt{idx\_behavior\_investor\_date} & BehaviorSignals & Accelerate latest signal lookups in views \\ \hline
+\texttt{idx\_warnings\_investor} & Warnings & Optimize JOIN operations with \texttt{Investors} \\ \hline
+\texttt{idx\_warnings\_date} & Warnings & Filter by date for the front-end dashboard \\ \hline
+\texttt{idx\_warnings\_level} & Warnings & Grouping and filtering by High/Medium/Low \\ \hline
+\texttt{idx\_investors\_profile} & Investors & Optimize \texttt{GROUP BY RiskProfile} \\ \hline
+\end{tabular}
+\caption{Database Indexing Strategy}
+\end{table}
+
+The \texttt{MarketData} table does not require additional indexing because the schema natively defines a \texttt{UNIQUE INDEX} on \texttt{(TradeDate, Ticker)}.
+
+\subsection{Views}
+We designed seven views to serve two primary purposes: analytics reporting and access control. These views encapsulate complex \texttt{JOIN} logic, allowing the Python application layer to execute simple \texttt{SELECT * FROM view\_name} statements rather than reconstructing queries.
+
+\begin{itemize}
+    \item \textbf{vw\_investor\_selling\_summary:} Executes a \texttt{LEFT JOIN} between \texttt{Investors} and \texttt{Trades}, grouped by \texttt{InvestorID}. It calculates \texttt{TotalTrades}, \texttt{TotalSells}, \texttt{PanicSells}, \texttt{PanicSellRatio}, and \texttt{AvgReturnOnSell}. The \texttt{LEFT JOIN} retains investors with zero trades. We apply \texttt{NULLIF} to the denominator to prevent division-by-zero errors when \texttt{TotalSells = 0}. Used for the Streamlit Investors page.
+    
+    \item \textbf{vw\_abnormal\_sell\_periods:} A complex 4-table \texttt{JOIN}. It utilizes a subquery (\texttt{SELECT TradeDate, MAX(Market\_Regime) FROM MarketData GROUP BY TradeDate}) to extract the dominant daily market regime. A \texttt{LEFT JOIN} on \texttt{Warnings} retains non-triggered records. It filters for \texttt{SellSpike $\ge$ 0.4 OR PanicScore $\ge$ 0.4}. Used for correlating market stress with panic behaviors.
+    
+    \item \textbf{vw\_warning\_dashboard:} Joins \texttt{Warnings}, \texttt{Investors}, and \texttt{BehaviorSignals} on both \texttt{InvestorID} and \texttt{WarningDate = ObservationDate}. Ordered by \texttt{Confidence DESC} to prioritize high-risk targets. Used for the real-time Warning Dashboard.
+    
+    \item \textbf{vw\_investor\_panic\_latest:} Utilizes a correlated subquery to extract the \texttt{MAX(ObservationDate)} per investor from \texttt{BehaviorSignals}. This guarantees each investor appears exactly once with their most recent signal. Used for top-10 ranking metrics and scatter plot analytics.
+    
+    \item \textbf{vw\_daily\_panic\_summary:} Groups data by \texttt{ObservationDate} to calculate \texttt{TotalInvestors}, \texttt{AvgPanicScore}, and counts of High/Medium/Low levels using \texttt{CASE WHEN} statements. Used for time-series warning visualization.
+    
+    \item \textbf{vw\_nav\_by\_riskprofile:} Joins \texttt{Portfolios} and \texttt{Investors}, grouping by \texttt{TradeDate} and \texttt{RiskProfile}. Used to compare average NAV trends across FOMO, RATIONAL, and NOISE cohorts.
+    
+    \item \textbf{vw\_investor\_trade\_history:} A direct \texttt{JOIN} between \texttt{Trades} and \texttt{Investors} that appends \texttt{InvestorName} and \texttt{RiskProfile} to raw trade logs. Used for the Trade History interface.
+\end{itemize}
+
+\subsection{User Defined Functions (UDFs)}
+The system employs four specialized UDFs divided into two categories: three data-reading functions (\texttt{READS SQL DATA}) and one pure calculation function (\texttt{DETERMINISTIC}). The \texttt{sp\_daily\_eod\_process} calls these sequentially; the application layer never invokes them directly.
+
+\begin{itemize}
+    \item \textbf{\texttt{fn\_rolling\_drawdown(p\_investor\_id, p\_obs\_date, p\_window\_days):}} 
+    Executes two queries: one finds the \texttt{MAX(NAV)} within the sliding window, and the second retrieves the latest NAV (\texttt{ORDER BY TradeDate DESC LIMIT 1}). A guard clause verifies \texttt{v\_peak\_nav > 0 AND v\_final\_nav IS NOT NULL}. 
+    The computation applies the formula: \texttt{LEAST(1.0, GREATEST(0.0, (peak - final) / peak * 5.0))}. The \texttt{GREATEST(0.0)} function explicitly clamps negative drawdowns (occurring when asset values exceed the historical peak) to zero.
+
+    \item \textbf{\texttt{fn\_sell\_intensity(p\_investor\_id, p\_obs\_date, p\_window\_days):}}
+    Executes a query to \texttt{COUNT} total \texttt{SELL} orders and a second query to \texttt{COUNT} orders where \texttt{Reason LIKE '\%PANIC\%' OR Reason LIKE '\%DISTRIBUTION\%'}. A guard statement (\texttt{IF v\_total\_sells > 0}) prevents division by zero, returning \texttt{0.0} if no sell orders exist. Variables are \texttt{CAST} to \texttt{FLOAT} prior to division to prevent integer truncation.
+
+    \item \textbf{\texttt{fn\_loss\_sensitivity(p\_investor\_id, p\_obs\_date, p\_window\_days):}}
+    Follows the identical architectural pattern as \texttt{fn\_sell\_intensity}. It substitutes the condition in the second query to filter for \texttt{Return\_Pct < 0} instead of parsing the string reason. It employs the exact same guard and \texttt{CAST} safety checks.
+
+    \item \textbf{\texttt{fn\_panic\_score(p\_drawdown, p\_sell\_spike, p\_loss\_sensitivity):}}
+    Configured as \texttt{DETERMINISTIC} (containing no database queries) to allow the MySQL engine to cache identical input/output pairs. It applies the weighted formula: \texttt{drawdown*0.4 + sell\_spike*0.4 + loss\_sensitivity*0.2}. A double clamp (\texttt{LEAST(1.0, GREATEST(0.0, ...))}) guarantees the output remains strictly within the bounds of $[0, 1]$ regardless of extreme input anomalies.
+\end{itemize}
+
+
+\subsection{Stored Procedure}
+The \texttt{sp\_daily\_eod\_process} functions as the central orchestrator within the ELT architecture. It accepts a target date parameter, calculates behavioral signals for all active investors, and initiates the automated warning cascade. 
+
+The procedure executes the following sequential steps:
+\begin{itemize}
+    \item \textbf{Step 1 — Cleanup (Idempotency):} It executes \texttt{DELETE FROM BehaviorSignals WHERE ObservationDate = p\_date}. This ensures that rerunning the procedure for the same trading day clears old calculations before generating new ones, preventing data duplication.
+    \item \textbf{Step 2 — CURSOR Declaration:} The procedure declares a cursor: \texttt{DECLARE cur CURSOR FOR SELECT DISTINCT InvestorID FROM Portfolios WHERE TradeDate = p\_date}. We utilize a cursor instead of a SET-based operation because each investor requires parameterized execution of three separate UDFs, which cannot be vectorized efficiently in pure SQL.
+    \item \textbf{Step 3 — CONTINUE HANDLER:} We implement a fail-safe: \texttt{DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1}. This safely terminates the loop when the cursor exhausts its records, preventing infinite execution loops.
+    \item \textbf{Step 4 — Loop Body:} For each distinct investor, the procedure sequentially calls \texttt{fn\_rolling\_drawdown}, \texttt{fn\_sell\_intensity}, \texttt{fn\_loss\_sensitivity}, and \texttt{fn\_panic\_score}. It then executes an \texttt{INSERT} into the \texttt{BehaviorSignals} table, which immediately fires the database trigger.
+    \item \textbf{Step 5 — Summary Result Set:} After closing the cursor, the procedure executes a final \texttt{SELECT} statement returning \texttt{TotalSignals}, \texttt{HighPanic}, and \texttt{MediumPanic} counts. The Python application receives this result set to update the Streamlit interface and terminal logs.
+\end{itemize}
+
+\subsection{Database Trigger}
+The \texttt{trg\_after\_behaviorsignal\_insert} trigger automates the generation of risk alerts. 
+
+\begin{itemize}
+    \item \textbf{Timing and Scope:} Defined as \texttt{AFTER INSERT ON BehaviorSignals FOR EACH ROW}. For a daily volume of 300 investors, the trigger fires exactly 300 times. We utilize an \texttt{AFTER} trigger to ensure the signal record is successfully committed to the database before generating a dependent warning.
+    \item \textbf{PanicLevel Logic:} It evaluates the new score:
+        \begin{itemize}
+            \item \texttt{NEW.PanicScore $\ge$ 0.6} $\rightarrow$ High
+            \item \texttt{NEW.PanicScore $\ge$ 0.4 AND < 0.6} $\rightarrow$ Medium
+            \item \texttt{NEW.PanicScore < 0.4} $\rightarrow$ Exits immediately without action.
+        \end{itemize}
+    \item \textbf{KeySignals JSON Construction:} The trigger dynamically builds a JSON array string to explain the warning. It appends "drawdown\_sensitivity" if \texttt{NEW.DrawdownLevel $\ge$ 0.1}, "sell\_spike" if \texttt{NEW.SellSpike $\ge$ 0.4}, and "rapid\_liquidation" if \texttt{NEW.LossSensitivity $\ge$ 0.4}. It trims trailing commas and wraps the string in brackets (e.g., \texttt{["drawdown\_sensitivity", "sell\_spike"]}).
+    \item \textbf{Design Rationale:} Implementing this logic via a trigger rather than embedding it within the Stored Procedure enforces defensive programming at the database layer. Whether a signal is inserted by the historical backfill script or the daily EOD procedure, the system autonomously guarantees warning generation.
+\end{itemize}
+
+\subsection{Security \& Administration}
+While the dataset is synthetic, the system implements comprehensive security measures reflecting a production environment where financial transaction logs require strict protection.
+
+\subsubsection{User Roles \& Permissions}
+We define three distinct database roles, mapping directly to the application's access tiers:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|p{3cm}|p{3.5cm}|p{3cm}|p{2.5cm}|}
+\hline
+\textbf{Role} & \textbf{SELECT} & \textbf{INSERT / UPDATE} & \textbf{EXECUTE} & \textbf{Notes} \\ \hline
+\texttt{viewer\_user} & All tables and views & None & None & Read-only access \\ \hline
+\texttt{analyst\_user} & All tables and views & \texttt{BehaviorSignals}, \texttt{Warnings} & All UDFs and Procedures & Executes EOD processes \\ \hline
+\texttt{admin\_user} & \texttt{ALL PRIVILEGES} & \texttt{ALL PRIVILEGES} & \texttt{ALL PRIVILEGES} & System admin \\ \hline
+\end{tabular}
+\caption{Role-Based Access Control Matrix}
+\end{table}
+
+\textbf{Explicit Revocation:} To protect raw data integrity, the \texttt{analyst\_user} receives a \texttt{GRANT SELECT} on the entire database, but we explicitly apply \texttt{REVOKE INSERT, UPDATE} on \texttt{Investors}, \texttt{Trades}, \texttt{Portfolios}, and \texttt{MarketData}.
+
+\subsubsection{Row-Level Security Simulation}
+MySQL does not natively support Row-Level Security (RLS). We simulate RLS using the \texttt{vw\_public\_warnings} view. This view masks the \texttt{InvestorID} and \texttt{Confidence} columns, exposing only the \texttt{WarningID}, \texttt{WarningDate}, \texttt{PanicLevel}, and \texttt{KeySignals}. The \texttt{viewer\_user} role is granted \texttt{SELECT} on this view while remaining locked out of the base \texttt{Warnings} table.
+
+\subsubsection{Credential Management}
+The system strictly isolates credentials from the source code. The Python application reads variables from a \texttt{.env} file using the \texttt{python-dotenv} library. This file is tracked in \texttt{.gitignore} to prevent exposure in version control. The \texttt{config.py} module constructs the connection string dynamically and masks passwords in debug outputs.
+
+\subsubsection{Backup Strategy}
+An automated cron job executes a daily database dump: 
+\texttt{mysqldump -u root -p panic\_selling\_project > backup\_\$(date +\%Y\%m\%d).sql}. 
+The system stores these timestamped files in a dedicated \texttt{backups/} directory, enabling point-in-time recovery to any historical state.
+
+\subsubsection{Performance Optimization Summary}
+System performance relies on three optimization layers:
+\begin{itemize}
+    \item \textbf{Index Layer:} 14 distinct indexes cover the primary query patterns. Composite indexes on \texttt{(InvestorID, TradeDate)} in the \texttt{Trades} and \texttt{Portfolios} tables specifically accelerate the heavy sliding-window aggregations performed by the UDFs.
+    \item \textbf{View Layer:} Encapsulating complex \texttt{JOIN} operations inside views reduces application overhead and allows the MySQL query optimizer to cache execution plans effectively.
+    \item \textbf{Procedure Layer:} The \texttt{sp\_daily\_eod\_process} bounds its computational scope to a single target date. This prevents full table locks and ensures predictable execution times as the dataset scales.
+\end{itemize}

@@ -1,0 +1,676 @@
+PWD D:\Database_panic_selling\NEU_Sample_report (1)
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
+INPUT main.tex
+OUTPUT main.log
+INPUT D:\Program Files\MikTeX\tex\latex\base\article.cls
+INPUT D:\Program Files\MikTeX\tex\latex\base\article.cls
+INPUT D:\Program Files\MikTeX\tex\latex\base\size10.clo
+INPUT D:\Program Files\MikTeX\tex\latex\base\size10.clo
+INPUT D:\Program Files\MikTeX\tex\latex\base\size10.clo
+INPUT .\neu.sty
+INPUT neu.sty
+INPUT D:\Program Files\MikTeX\tex\latex\a4wide\a4wide.sty
+INPUT D:\Program Files\MikTeX\tex\latex\a4wide\a4wide.sty
+INPUT D:\Program Files\MikTeX\tex\latex\ntgclass\a4.sty
+INPUT D:\Program Files\MikTeX\tex\latex\ntgclass\a4.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsfonts\amssymb.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsfonts\amssymb.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsfonts\amsfonts.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsfonts\amsfonts.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\epsfig.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\epsfig.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\graphicx.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\graphicx.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\keyval.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\keyval.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\graphics.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\graphics.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\trig.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\trig.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics-cfg\graphics.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\graphics-cfg\graphics.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\graphics-cfg\graphics.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\graphics-def\pdftex.def
+INPUT D:\Program Files\MikTeX\tex\latex\graphics-def\pdftex.def
+INPUT D:\Program Files\MikTeX\tex\latex\graphics-def\pdftex.def
+INPUT D:\Program Files\MikTeX\tex\latex\base\latexsym.sty
+INPUT D:\Program Files\MikTeX\tex\latex\base\latexsym.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\multicol.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\multicol.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\array.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\array.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\hhline.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\hhline.sty
+INPUT D:\Program Files\MikTeX\tex\latex\fancyhdr\fancyhdr.sty
+INPUT D:\Program Files\MikTeX\tex\latex\fancyhdr\fancyhdr.sty
+INPUT D:\Program Files\MikTeX\tex\latex\base\fontenc.sty
+INPUT D:\Program Files\MikTeX\tex\latex\base\fontenc.sty
+INPUT D:\Program Files\MikTeX\tex\latex\cyrillic\t2aenc.def
+INPUT D:\Program Files\MikTeX\tex\latex\cyrillic\t2aenc.def
+INPUT D:\Program Files\MikTeX\tex\latex\cyrillic\t2aenc.def
+INPUT D:\Program Files\MikTeX\tex\latex\base\t2aenc.dfu
+INPUT D:\Program Files\MikTeX\tex\latex\base\t2aenc.dfu
+INPUT D:\Program Files\MikTeX\tex\latex\base\t2aenc.dfu
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5enc.def
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5enc.def
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5enc.def
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5enc.dfu
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5enc.dfu
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5enc.dfu
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5cmr.fd
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5cmr.fd
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5cmr.fd
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnr10.tfm
+INPUT D:\Program Files\MikTeX\tex\latex\base\inputenc.sty
+INPUT D:\Program Files\MikTeX\tex\latex\base\inputenc.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsmath\amsmath.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsmath\amsmath.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsmath\amsopn.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsmath\amstext.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsmath\amstext.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsmath\amsgen.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsmath\amsgen.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsmath\amsbsy.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsmath\amsbsy.sty
+INPUT D:\Program Files\MikTeX\tex\latex\amsmath\amsopn.sty
+INPUT D:\Program Files\MikTeX\tex\latex\lastpage\lastpage.sty
+INPUT D:\Program Files\MikTeX\tex\latex\lastpage\lastpage.sty
+INPUT D:\Program Files\MikTeX\tex\latex\lastpage\lastpage2e.sty
+INPUT D:\Program Files\MikTeX\tex\latex\lastpage\lastpage2e.sty
+INPUT D:\Program Files\MikTeX\tex\latex\lastpage\lastpagemodern.sty
+INPUT D:\Program Files\MikTeX\tex\latex\lastpage\lastpagemodern.sty
+INPUT D:\Program Files\MikTeX\tex\latex\algorithm2e\algorithm2e.sty
+INPUT D:\Program Files\MikTeX\tex\latex\algorithm2e\algorithm2e.sty
+INPUT D:\Program Files\MikTeX\tex\latex\base\ifthen.sty
+INPUT D:\Program Files\MikTeX\tex\latex\base\ifthen.sty
+INPUT D:\Program Files\MikTeX\tex\latex\ifoddpage\ifoddpage.sty
+INPUT D:\Program Files\MikTeX\tex\latex\ifoddpage\ifoddpage.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\xspace.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\xspace.sty
+INPUT D:\Program Files\MikTeX\tex\latex\relsize\relsize.sty
+INPUT D:\Program Files\MikTeX\tex\latex\relsize\relsize.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\enumerate.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\enumerate.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\color.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\color.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics-cfg\color.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\graphics-cfg\color.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\graphics-cfg\color.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\mathcolor.ltx
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\mathcolor.ltx
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\mathcolor.ltx
+INPUT D:\Program Files\MikTeX\tex\latex\tools\tabularx.sty
+INPUT D:\Program Files\MikTeX\tex\latex\tools\tabularx.sty
+INPUT D:\Program Files\MikTeX\tex\latex\caption\caption.sty
+INPUT D:\Program Files\MikTeX\tex\latex\caption\caption.sty
+INPUT D:\Program Files\MikTeX\tex\latex\caption\caption3.sty
+INPUT D:\Program Files\MikTeX\tex\latex\caption\caption3.sty
+INPUT D:\Program Files\MikTeX\tex\latex\multirow\multirow.sty
+INPUT D:\Program Files\MikTeX\tex\latex\multirow\multirow.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\rotating.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\rotating.sty
+INPUT D:\Program Files\MikTeX\tex\latex\geometry\geometry.sty
+INPUT D:\Program Files\MikTeX\tex\latex\geometry\geometry.sty
+INPUT D:\Program Files\MikTeX\tex\generic\iftex\ifvtex.sty
+INPUT D:\Program Files\MikTeX\tex\generic\iftex\ifvtex.sty
+INPUT D:\Program Files\MikTeX\tex\generic\iftex\iftex.sty
+INPUT D:\Program Files\MikTeX\tex\generic\iftex\iftex.sty
+INPUT D:\Program Files\MikTeX\tex\latex\geometry\geometry.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\geometry\geometry.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\geometry\geometry.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\setspace\setspace.sty
+INPUT D:\Program Files\MikTeX\tex\latex\setspace\setspace.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\frontendlayer\tikz.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\frontendlayer\tikz.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\basiclayer\pgf.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\basiclayer\pgf.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\utilities\pgfrcs.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\utilities\pgfrcs.sty
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgfutil-common.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgfutil-latex.def
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgfrcs.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgfrcs.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgfrcs.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\pgf.revision.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\pgf.revision.tex
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\basiclayer\pgfcore.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\basiclayer\pgfcore.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\systemlayer\pgfsys.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\systemlayer\pgfsys.sty
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsys.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsys.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsys.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgfkeys.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgfkeyslibraryfiltered.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgf.cfg
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsys-pdftex.def
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsys-pdftex.def
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsys-common-pdf.def
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsyssoftpath.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsyssoftpath.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsyssoftpath.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsysprotocol.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsysprotocol.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\systemlayer\pgfsysprotocol.code.tex
+INPUT D:\Program Files\MikTeX\tex\latex\xcolor\xcolor.sty
+INPUT D:\Program Files\MikTeX\tex\latex\xcolor\xcolor.sty
+INPUT D:\Program Files\MikTeX\tex\latex\graphics-cfg\color.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\graphics\mathcolor.ltx
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcore.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcore.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcore.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmath.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathutil.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathparser.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathfunctions.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathfunctions.basic.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathfunctions.trigonometric.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathfunctions.random.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathfunctions.comparison.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathfunctions.base.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathfunctions.round.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathfunctions.misc.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathfunctions.integerarithmetics.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathcalc.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmathfloat.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfint.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcorepoints.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcorepathconstruct.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcorepathusage.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcorescopes.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcoregraphicstate.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcoretransformations.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcorequick.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcoreobjects.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcorepathprocessing.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcorearrows.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcoreshade.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcoreimage.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcoreexternal.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcorelayers.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcoretransparency.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcorepatterns.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\basiclayer\pgfcorerdf.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\modules\pgfmoduleshapes.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\modules\pgfmoduleplot.code.tex
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\compatibility\pgfcomp-version-0-65.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\compatibility\pgfcomp-version-0-65.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\compatibility\pgfcomp-version-1-18.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\compatibility\pgfcomp-version-1-18.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\utilities\pgffor.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\utilities\pgffor.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\utilities\pgfkeys.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\utilities\pgfkeys.sty
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgfkeys.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgfkeys.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgfkeys.code.tex
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\math\pgfmath.sty
+INPUT D:\Program Files\MikTeX\tex\latex\pgf\math\pgfmath.sty
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmath.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmath.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\math\pgfmath.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgffor.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgffor.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\utilities\pgffor.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\frontendlayer\tikz\tikz.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\frontendlayer\tikz\tikz.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\frontendlayer\tikz\tikz.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\libraries\pgflibraryplothandlers.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\libraries\pgflibraryplothandlers.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\modules\pgfmodulematrix.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\frontendlayer\tikz\libraries\tikzlibrarytopaths.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\frontendlayer\tikz\libraries\tikzlibrarytopaths.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\frontendlayer\tikz\libraries\tikzlibraryarrows.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\frontendlayer\tikz\libraries\tikzlibraryarrows.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\libraries\pgflibraryarrows.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\libraries\pgflibraryarrows.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\frontendlayer\tikz\libraries\tikzlibrarybackgrounds.code.tex
+INPUT D:\Program Files\MikTeX\tex\generic\pgf\frontendlayer\tikz\libraries\tikzlibrarybackgrounds.code.tex
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\hyperref.sty
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\hyperref.sty
+INPUT D:\Program Files\MikTeX\tex\latex\kvsetkeys\kvsetkeys.sty
+INPUT D:\Program Files\MikTeX\tex\latex\kvsetkeys\kvsetkeys.sty
+INPUT D:\Program Files\MikTeX\tex\generic\kvdefinekeys\kvdefinekeys.sty
+INPUT D:\Program Files\MikTeX\tex\generic\kvdefinekeys\kvdefinekeys.sty
+INPUT D:\Program Files\MikTeX\tex\generic\pdfescape\pdfescape.sty
+INPUT D:\Program Files\MikTeX\tex\generic\pdfescape\pdfescape.sty
+INPUT D:\Program Files\MikTeX\tex\generic\ltxcmds\ltxcmds.sty
+INPUT D:\Program Files\MikTeX\tex\generic\ltxcmds\ltxcmds.sty
+INPUT D:\Program Files\MikTeX\tex\generic\pdftexcmds\pdftexcmds.sty
+INPUT D:\Program Files\MikTeX\tex\generic\pdftexcmds\pdftexcmds.sty
+INPUT D:\Program Files\MikTeX\tex\generic\infwarerr\infwarerr.sty
+INPUT D:\Program Files\MikTeX\tex\generic\infwarerr\infwarerr.sty
+INPUT D:\Program Files\MikTeX\tex\latex\hycolor\hycolor.sty
+INPUT D:\Program Files\MikTeX\tex\latex\hycolor\hycolor.sty
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\nameref.sty
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\nameref.sty
+INPUT D:\Program Files\MikTeX\tex\latex\refcount\refcount.sty
+INPUT D:\Program Files\MikTeX\tex\latex\refcount\refcount.sty
+INPUT D:\Program Files\MikTeX\tex\generic\gettitlestring\gettitlestring.sty
+INPUT D:\Program Files\MikTeX\tex\generic\gettitlestring\gettitlestring.sty
+INPUT D:\Program Files\MikTeX\tex\latex\kvoptions\kvoptions.sty
+INPUT D:\Program Files\MikTeX\tex\latex\kvoptions\kvoptions.sty
+INPUT D:\Program Files\MikTeX\tex\latex\etoolbox\etoolbox.sty
+INPUT D:\Program Files\MikTeX\tex\latex\etoolbox\etoolbox.sty
+INPUT D:\Program Files\MikTeX\tex\generic\stringenc\stringenc.sty
+INPUT D:\Program Files\MikTeX\tex\generic\stringenc\stringenc.sty
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\pd1enc.def
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\pd1enc.def
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\pd1enc.def
+INPUT D:\Program Files\MikTeX\tex\generic\intcalc\intcalc.sty
+INPUT D:\Program Files\MikTeX\tex\generic\intcalc\intcalc.sty
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\puenc.def
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\puenc.def
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\puenc.def
+INPUT D:\Program Files\MikTeX\tex\latex\url\url.sty
+INPUT D:\Program Files\MikTeX\tex\latex\url\url.sty
+INPUT D:\Program Files\MikTeX\tex\generic\bitset\bitset.sty
+INPUT D:\Program Files\MikTeX\tex\generic\bitset\bitset.sty
+INPUT D:\Program Files\MikTeX\tex\generic\bigintcalc\bigintcalc.sty
+INPUT D:\Program Files\MikTeX\tex\generic\bigintcalc\bigintcalc.sty
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\hpdftex.def
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\hpdftex.def
+INPUT D:\Program Files\MikTeX\tex\latex\hyperref\hpdftex.def
+INPUT D:\Program Files\MikTeX\tex\latex\rerunfilecheck\rerunfilecheck.sty
+INPUT D:\Program Files\MikTeX\tex\latex\rerunfilecheck\rerunfilecheck.sty
+INPUT D:\Program Files\MikTeX\tex\generic\uniquecounter\uniquecounter.sty
+INPUT D:\Program Files\MikTeX\tex\generic\uniquecounter\uniquecounter.sty
+INPUT D:\Program Files\MikTeX\tex\latex\caption\subcaption.sty
+INPUT D:\Program Files\MikTeX\tex\latex\caption\subcaption.sty
+INPUT D:\Program Files\MikTeX\tex\latex\listings\listings.sty
+INPUT D:\Program Files\MikTeX\tex\latex\listings\listings.sty
+INPUT D:\Program Files\MikTeX\tex\latex\listings\lstpatch.sty
+INPUT D:\Program Files\MikTeX\tex\latex\listings\lstpatch.sty
+INPUT D:\Program Files\MikTeX\tex\latex\listings\lstpatch.sty
+INPUT D:\Program Files\MikTeX\tex\latex\listings\lstmisc.sty
+INPUT D:\Program Files\MikTeX\tex\latex\listings\lstmisc.sty
+INPUT D:\Program Files\MikTeX\tex\latex\listings\lstmisc.sty
+INPUT D:\Program Files\MikTeX\tex\latex\listings\listings.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\listings\listings.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\listings\listings.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\biblatex.sty
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\biblatex.sty
+INPUT D:\Program Files\MikTeX\tex\latex\logreq\logreq.sty
+INPUT D:\Program Files\MikTeX\tex\latex\logreq\logreq.sty
+INPUT D:\Program Files\MikTeX\tex\latex\logreq\logreq.def
+INPUT D:\Program Files\MikTeX\tex\latex\logreq\logreq.def
+INPUT D:\Program Files\MikTeX\tex\latex\logreq\logreq.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-dm.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-dm.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-dm.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-compat.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-compat.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-compat.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-bibtex.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-bibtex.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-bibtex.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\biblatex.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\biblatex.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\biblatex.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\bbx\numeric.bbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\bbx\numeric.bbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\bbx\numeric.bbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\bbx\standard.bbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\bbx\standard.bbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\bbx\standard.bbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\cbx\numeric.cbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\cbx\numeric.cbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\cbx\numeric.cbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\biblatex.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\biblatex.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\biblatex.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\l3kernel\expl3.sty
+INPUT D:\Program Files\MikTeX\tex\latex\l3kernel\expl3.sty
+INPUT D:\Program Files\MikTeX\tex\latex\l3backend\l3backend-pdftex.def
+INPUT D:\Program Files\MikTeX\tex\latex\l3backend\l3backend-pdftex.def
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-case-expl3.sty
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\blx-case-expl3.sty
+INPUT D:\Program Files\MikTeX\tex\latex\l3packages\xparse\xparse.sty
+INPUT D:\Program Files\MikTeX\tex\latex\l3packages\xparse\xparse.sty
+INPUT .\main.aux
+INPUT .\main.aux
+INPUT main.aux
+INPUT .\Sections\1-Title.aux
+INPUT .\Sections\1-Title.aux
+INPUT Sections\1-Title.aux
+INPUT .\Sections\2-Introduction.aux
+INPUT .\Sections\2-Introduction.aux
+INPUT Sections\2-Introduction.aux
+INPUT .\Sections\3-DatabaseDesign.aux
+INPUT .\Sections\3-DatabaseDesign.aux
+INPUT Sections\3-DatabaseDesign.aux
+INPUT .\Sections\4-Implementation.aux
+INPUT .\Sections\4-Implementation.aux
+INPUT Sections\4-Implementation.aux
+INPUT .\Sections\5-Advanced-Objects-Security.aux
+INPUT .\Sections\5-Advanced-Objects-Security.aux
+INPUT Sections\5-Advanced-Objects-Security.aux
+INPUT .\Sections\6-ResultAnalysis.aux
+INPUT .\Sections\6-ResultAnalysis.aux
+INPUT Sections\6-ResultAnalysis.aux
+INPUT .\Sections\7-Conclusion.aux
+INPUT .\Sections\7-Conclusion.aux
+INPUT Sections\7-Conclusion.aux
+OUTPUT main.aux
+INPUT D:\Program Files\MikTeX\tex\latex\cyrillic\t2acmr.fd
+INPUT D:\Program Files\MikTeX\tex\latex\cyrillic\t2acmr.fd
+INPUT D:\Program Files\MikTeX\tex\latex\cyrillic\t2acmr.fd
+INPUT D:\Program Files\MikTeX\tex\context\base\mkii\supp-pdf.mkii
+INPUT D:\Program Files\MikTeX\tex\context\base\mkii\supp-pdf.mkii
+INPUT D:\Program Files\MikTeX\tex\context\base\mkii\supp-pdf.mkii
+INPUT D:\Program Files\MikTeX\tex\latex\epstopdf-pkg\epstopdf-base.sty
+INPUT D:\Program Files\MikTeX\tex\latex\epstopdf-pkg\epstopdf-base.sty
+INPUT D:\Program Files\MikTeX\tex\latex\00miktex\epstopdf-sys.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\00miktex\epstopdf-sys.cfg
+INPUT D:\Program Files\MikTeX\tex\latex\00miktex\epstopdf-sys.cfg
+INPUT .\main.out
+INPUT .\main.out
+INPUT main.out
+INPUT main.out
+OUTPUT main.pdf
+INPUT .\main.out
+INPUT .\main.out
+OUTPUT main.out
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\lbx\english.lbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\lbx\english.lbx
+INPUT D:\Program Files\MikTeX\tex\latex\biblatex\lbx\english.lbx
+OUTPUT main-blx.bib
+INPUT main.bbl
+INPUT .\main.bbl
+INPUT .\main.bbl
+INPUT .\main.bbl
+INPUT main.bbl
+INPUT .\Sections\1-Title.tex
+INPUT .\Sections\1-Title.tex
+OUTPUT Sections\1-Title.aux
+INPUT .\Sections\1-Title.tex
+INPUT .\Sections\1-Title.tex
+INPUT Sections\1-Title.tex
+INPUT .\Images\NEU logo.png
+INPUT .\Images\NEU logo.png
+INPUT .\Images\NEU logo.png
+INPUT .\Images\NEU logo.png
+INPUT .\Images\NEU logo.png
+INPUT .\Images\NEU logo.png
+INPUT .\Images\NEU logo.png
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\amsfonts\cmextra\cmex7.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\amsfonts\cmextra\cmex7.tfm
+INPUT D:\Program Files\MikTeX\tex\latex\amsfonts\umsa.fd
+INPUT D:\Program Files\MikTeX\tex\latex\amsfonts\umsa.fd
+INPUT D:\Program Files\MikTeX\tex\latex\amsfonts\umsa.fd
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\amsfonts\symbols\msam10.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\amsfonts\symbols\msam7.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\amsfonts\symbols\msam5.tfm
+INPUT D:\Program Files\MikTeX\tex\latex\amsfonts\umsb.fd
+INPUT D:\Program Files\MikTeX\tex\latex\amsfonts\umsb.fd
+INPUT D:\Program Files\MikTeX\tex\latex\amsfonts\umsb.fd
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\amsfonts\symbols\msbm10.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\amsfonts\symbols\msbm7.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\amsfonts\symbols\msbm5.tfm
+INPUT D:\Program Files\MikTeX\tex\latex\base\ulasy.fd
+INPUT D:\Program Files\MikTeX\tex\latex\base\ulasy.fd
+INPUT D:\Program Files\MikTeX\tex\latex\base\ulasy.fd
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\latex-fonts\lasy10.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\latex-fonts\lasy7.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\public\latex-fonts\lasy5.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnbx10.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnbx12.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnbx12.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnbx12.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnr8.tfm
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\map\pdftex\pdftex.map
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnr12.tfm
+INPUT .\main.toc
+INPUT .\main.toc
+INPUT main.toc
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5cmtt.fd
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5cmtt.fd
+INPUT D:\Program Files\MikTeX\tex\latex\vntex\t5cmtt.fd
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vntt10.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnr5.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnbx5.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnr7.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vntt8.tfm
+OUTPUT main.toc
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Sections\2-Introduction.tex
+INPUT .\Sections\2-Introduction.tex
+OUTPUT Sections\2-Introduction.aux
+INPUT .\Sections\2-Introduction.tex
+INPUT .\Sections\2-Introduction.tex
+INPUT Sections\2-Introduction.tex
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnr12.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnbx12.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\jknappen\ec\tcrm1000.tfm
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Sections\3-DatabaseDesign.tex
+INPUT .\Sections\3-DatabaseDesign.tex
+OUTPUT Sections\3-DatabaseDesign.aux
+INPUT .\Sections\3-DatabaseDesign.tex
+INPUT .\Sections\3-DatabaseDesign.tex
+INPUT Sections\3-DatabaseDesign.tex
+INPUT .\Images\ERD.png
+INPUT .\Images\ERD.png
+INPUT .\Images\ERD.png
+INPUT .\Images\ERD.png
+INPUT .\Images\ERD.png
+INPUT .\Images\ERD.png
+INPUT .\Images\ERD.png
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnti10.tfm
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\boxplot.png
+INPUT .\Images\boxplot.png
+INPUT .\Images\boxplot.png
+INPUT .\Images\boxplot.png
+INPUT .\Images\boxplot.png
+INPUT .\Images\boxplot.png
+INPUT .\Images\boxplot.png
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Sections\4-Implementation.tex
+INPUT .\Sections\4-Implementation.tex
+OUTPUT Sections\4-Implementation.aux
+INPUT .\Sections\4-Implementation.tex
+INPUT .\Sections\4-Implementation.tex
+INPUT Sections\4-Implementation.tex
+INPUT .\Images\pipeline.png
+INPUT .\Images\pipeline.png
+INPUT .\Images\pipeline.png
+INPUT .\Images\pipeline.png
+INPUT .\Images\pipeline.png
+INPUT .\Images\pipeline.png
+INPUT .\Images\pipeline.png
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vnr9.tfm
+INPUT D:\Program Files\MikTeX\fonts\tfm\vntex\vnr\vntt9.tfm
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Sections\5-Advanced-Objects-Security.tex
+INPUT .\Sections\5-Advanced-Objects-Security.tex
+OUTPUT Sections\5-Advanced-Objects-Security.aux
+INPUT .\Sections\5-Advanced-Objects-Security.tex
+INPUT .\Sections\5-Advanced-Objects-Security.tex
+INPUT Sections\5-Advanced-Objects-Security.tex
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Sections\6-ResultAnalysis.tex
+INPUT .\Sections\6-ResultAnalysis.tex
+OUTPUT Sections\6-ResultAnalysis.aux
+INPUT .\Sections\6-ResultAnalysis.tex
+INPUT .\Sections\6-ResultAnalysis.tex
+INPUT Sections\6-ResultAnalysis.tex
+INPUT .\Images\dashboard.png
+INPUT .\Images\dashboard.png
+INPUT .\Images\dashboard.png
+INPUT .\Images\dashboard.png
+INPUT .\Images\dashboard.png
+INPUT .\Images\dashboard.png
+INPUT .\Images\dashboard.png
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\warning_dashboard.png
+INPUT .\Images\warning_dashboard.png
+INPUT .\Images\warning_dashboard.png
+INPUT .\Images\warning_dashboard.png
+INPUT .\Images\warning_dashboard.png
+INPUT .\Images\warning_dashboard.png
+INPUT .\Images\warning_dashboard.png
+INPUT .\Images\next_day.png
+INPUT .\Images\next_day.png
+INPUT .\Images\next_day.png
+INPUT .\Images\next_day.png
+INPUT .\Images\next_day.png
+INPUT .\Images\next_day.png
+INPUT .\Images\next_day.png
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Sections\7-Conclusion.tex
+INPUT .\Sections\7-Conclusion.tex
+OUTPUT Sections\7-Conclusion.aux
+INPUT .\Sections\7-Conclusion.tex
+INPUT .\Sections\7-Conclusion.tex
+INPUT Sections\7-Conclusion.tex
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT .\Images\logo 1.pdf
+INPUT main.aux
+INPUT .\Sections\1-Title.aux
+INPUT .\Sections\1-Title.aux
+INPUT Sections\1-Title.aux
+INPUT .\Sections\2-Introduction.aux
+INPUT .\Sections\2-Introduction.aux
+INPUT Sections\2-Introduction.aux
+INPUT .\Sections\3-DatabaseDesign.aux
+INPUT .\Sections\3-DatabaseDesign.aux
+INPUT Sections\3-DatabaseDesign.aux
+INPUT .\Sections\4-Implementation.aux
+INPUT .\Sections\4-Implementation.aux
+INPUT Sections\4-Implementation.aux
+INPUT .\Sections\5-Advanced-Objects-Security.aux
+INPUT .\Sections\5-Advanced-Objects-Security.aux
+INPUT Sections\5-Advanced-Objects-Security.aux
+INPUT .\Sections\6-ResultAnalysis.aux
+INPUT .\Sections\6-ResultAnalysis.aux
+INPUT Sections\6-ResultAnalysis.aux
+INPUT .\Sections\7-Conclusion.aux
+INPUT .\Sections\7-Conclusion.aux
+INPUT Sections\7-Conclusion.aux
+INPUT .\main.out
+INPUT .\main.out
+INPUT main.run.xml
+OUTPUT main.run.xml
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vntt9.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vntt9.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vnti10.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vnti10.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\tcrm1000.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\tcrm1000.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vnbx12.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vnbx12.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi525\vntt8.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi525\vntt8.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vnbx10.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vnbx10.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vntt10.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vntt10.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vnr8.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vnr8.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi1244\vnbx12.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi1244\vnbx12.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi720\vnbx12.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi720\vnbx12.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi864\vnbx12.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi864\vnbx12.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vnr10.pk
+INPUT C:\Users\Dell Gaming\AppData\Local\MiKTeX\fonts\pk\ljfour\vntex\vnr\dpi600\vnr10.pk
+INPUT D:\Program Files\MikTeX\fonts\type1\public\amsfonts\cm\cmex10.pfb
+INPUT D:\Program Files\MikTeX\fonts\type1\public\amsfonts\cm\cmex10.pfb
+INPUT D:\Program Files\MikTeX\fonts\type1\public\amsfonts\cm\cmmi10.pfb
+INPUT D:\Program Files\MikTeX\fonts\type1\public\amsfonts\cm\cmmi10.pfb
+INPUT D:\Program Files\MikTeX\fonts\type1\public\amsfonts\cm\cmmi7.pfb
+INPUT D:\Program Files\MikTeX\fonts\type1\public\amsfonts\cm\cmmi7.pfb
+INPUT D:\Program Files\MikTeX\fonts\type1\public\amsfonts\cm\cmr10.pfb
+INPUT D:\Program Files\MikTeX\fonts\type1\public\amsfonts\cm\cmr10.pfb
+INPUT D:\Program Files\MikTeX\fonts\type1\public\amsfonts\cm\cmsy10.pfb
+INPUT D:\Program Files\MikTeX\fonts\type1\public\amsfonts\cm\cmsy10.pfb

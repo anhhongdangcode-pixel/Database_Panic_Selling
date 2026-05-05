@@ -1,0 +1,51 @@
+\section{Conclusion}
+
+\subsection{Summary of Achievements}
+This project set out with five core objectives, each of which has been fully realized in the delivered system.
+
+First, we designed and implemented a normalized relational database comprising six tables with clearly defined primary keys, foreign keys, and constraints. The schema captures the full behavioral lifecycle of an investor: from raw market prices and trade executions through to portfolio snapshots, derived behavioral signals, and automated risk warnings.
+
+Second, we constructed a reproducible synthetic data generation pipeline. By fixing \texttt{SEED\_VALUE = 2026} and modeling three psychologically distinct investor archetypes, the pipeline produces a dataset of 1,000 investors transacting across 9 Vietnamese stock tickers over a full trading year, yielding approximately 48,000 trade records and 240,000 daily portfolio snapshots.
+
+Third, we engineered three interpretable behavioral features — \texttt{DrawdownLevel}, \texttt{SellSpike}, and \texttt{LossSensitivity} — computed over a 30-day rolling window. These features are aggregated into a single \texttt{PanicScore} via a justified weighted formula, producing a continuous risk metric for each investor on each trading day.
+
+Fourth, the warning generation process is fully automated. The database trigger \texttt{trg\_after\_behaviorsignal\_insert} fires on every signal insertion, classifying investors into High, Medium, or Low risk levels and constructing interpretable \texttt{KeySignals} JSON arrays without any application-layer intervention.
+
+Fifth, the Next Day Simulation feature demonstrates the system's capacity for continuous, incremental updates. By reserving September–December 2025 as unseen future data, each execution of \texttt{next\_day.py} advances the database by exactly one trading day, proving that the system operates correctly in a live production scenario.
+
+\subsection{Key Technical Contributions}
+Beyond fulfilling the stated requirements, the project delivers three architectural contributions of particular technical merit.
+
+\textbf{ELT Architecture:} The system enforces a strict separation of concerns between the Python application layer and the MySQL database engine. Python is responsible solely for data transport — reading CSV files and executing \texttt{INSERT} statements. All computational business logic, including rolling aggregations, weighted scoring, and threshold evaluation, executes entirely within the database via four User-Defined Functions and the \texttt{sp\_daily\_eod\_process} Stored Procedure. This design minimizes application memory consumption and leverages the MySQL engine's native optimization for bulk data operations.
+
+\textbf{Defensive Trigger Design:} Implementing the warning generation logic inside a database trigger rather than within the Stored Procedure enforces data integrity at the lowest possible layer. Whether \texttt{BehaviorSignals} records are inserted by the historical backfill script or the daily EOD procedure, the system autonomously guarantees that no qualifying panic signal goes unrecorded in the \texttt{Warnings} table.
+
+\textbf{Incremental Update Simulation:} The deliberate data cutoff at August 31, 2025, transforms a static batch dataset into a dynamic, day-by-day simulation environment. This design decision proves the system's suitability for real-world deployment where data arrives incrementally and risk assessments must be updated continuously.
+
+\subsection{Validation of Results}
+The empirical results confirm that the system behaves consistently with its design assumptions. The FOMO investor cohort records the highest median \texttt{PanicScore} and produces the overwhelming majority of High-level warnings, validating that the behavioral parameterization correctly differentiates investor archetypes. The top-ranked warnings by Confidence score are exclusively attributed to FOMO-profile investors, with several individuals — such as investor \texttt{f612e56c} — appearing repeatedly across multiple observation dates. This recurrence demonstrates that the system successfully tracks persistent behavioral patterns over time, not merely isolated events.
+
+The Next Day simulation further validates end-to-end correctness. Processing a single trading day produces precisely scoped outputs: market prices update for all 9 tickers, new trades and portfolio snapshots are recorded, and the Stored Procedure computes fresh \texttt{BehaviorSignals} for all 300 active investors before the trigger autonomously populates the \texttt{Warnings} table.
+
+\subsection{Limitations}
+We acknowledge several limitations inherent to the current implementation.
+
+The most significant constraint is the synthetic nature of the dataset. While the behavioral simulation is grounded in documented psychological biases, the \texttt{PanicScore} formula and its thresholds have not been calibrated against real, labeled panic events from actual brokerage data. Consequently, the system's precision and recall on genuine market crises remain unvalidated.
+
+The scoring model itself relies on a rule-based weighted sum. The weights (0.4, 0.4, 0.2) were determined through domain reasoning rather than empirical optimization. A machine learning approach trained on historically labeled panic events could potentially yield a more accurate and adaptive scoring function.
+
+Finally, the \texttt{Market\_Regime} classification depends solely on \texttt{DailyReturn} and a 5-day \texttt{Future\_Return} look-ahead. This simplified classification does not incorporate broader macroeconomic indicators, market breadth metrics, or sentiment data, which are known to influence panic behavior in real markets.
+
+\subsection{Future Work}
+Several directions exist for extending this system into a more robust, production-grade platform.
+
+The most impactful enhancement would be the integration of real brokerage transaction data. Access to genuine individual-level trade logs would allow the \texttt{PanicScore} model to be trained and validated against confirmed panic selling episodes, replacing rule-based weights with empirically learned parameters.
+
+A second direction involves adopting a supervised or hybrid machine learning model — such as a logistic regression or gradient-boosted classifier — to replace the weighted sum. Features such as holding period duration, portfolio concentration ratios, and correlation with market sentiment indices could be incorporated to enrich the behavioral profile beyond the current three signals.
+
+Third, the system could be extended with an Explainable AI module. Integrating SHAP (SHapley Additive exPlanations) values would allow the advisory layer to communicate not only that an investor is at risk, but precisely which behavioral dimension is driving the elevated score on any given day. This would substantially increase the system's practical utility in a client-facing advisory context.
+
+Finally, a scalability study using a larger synthetic population — on the order of 100,000 investors — would stress-test the Stored Procedure's cursor-based loop and inform whether a transition to set-based batch processing or a partitioned table strategy is warranted for production deployment.
+
+\subsection{Availability of Source Code}
+The complete implementation, including database schema, Python data pipeline, SQL objects, and Streamlit application, is available in the project repository \url{https://github.com/anhhongdangcode-pixel/Database_Panic_Selling}.

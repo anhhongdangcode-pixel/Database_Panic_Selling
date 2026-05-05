@@ -1,0 +1,41 @@
+\section{Introduction}
+
+\subsection{Background \& Motivation}
+The Vietnamese stock market has experienced significant growth in recent years, marked by a sharp surge in new retail investor accounts. Lacking deep market experience, these retail participants frequently fall prey to emotional trading, particularly during periods of high volatility. This emotional reactivity often culminates in panic selling—the rapid, fear-driven liquidation of assets. Panic selling not only inflicts severe capital losses on individual portfolios but also amplifies broader market instability. Consequently, financial institutions and brokerage firms require data-driven early warning systems to identify behavioral risks and intervene proactively through advisory systems.
+
+\subsection{Problem Statement}
+This project focuses on detecting and quantifying panic selling behaviors among retail investors using historical transaction logs and portfolio snapshots over time. 
+
+\begin{itemize}
+    \item \textbf{Inputs:} Raw market data, individual trade histories, and daily Net Asset Value (NAV) records.
+    \item \textbf{Outputs:} A calculated \texttt{PanicScore}, categorized \texttt{PanicLevel}, JSON-formatted \texttt{KeySignals}, and a \texttt{Confidence} metric for each monitored investor.
+    \item \textbf{Challenge:} Due to strict privacy regulations, granular retail trading data is publicly unavailable. To solve this, the project must first construct a synthetic data generation pipeline to simulate realistic market behaviors before executing the core database logic.
+\end{itemize}
+
+\subsection{Objectives}
+The project targets five specific technical goals:
+\begin{enumerate}
+    \item Design and implement a relational database optimized for storing and querying investor behavioral data.
+    \item Build a synthetic data pipeline that accurately mimics real-world trading patterns and psychological biases.
+    \item Extract quantitative behavioral features directly from raw transaction data.
+    \item Calculate a \texttt{PanicScore} and classify investor risk levels using weighted mathematical models.
+    \item Automate the warning generation process and demonstrate a continuous, real-time data update cycle.
+\end{enumerate}
+
+\subsection{Scope}
+The system architecture and data boundaries are defined as follows:
+\begin{itemize}
+    \item \textbf{Database:} MySQL, structured around 6 primary tables.
+    \item \textbf{Language \& Libraries:} Python 3, utilizing SQLAlchemy for ORM connections and Pandas for data transport.
+    \item \textbf{Dataset:} Simulated data covering 9 major Vietnamese stock tickers throughout the year 2025, tracking 1,000 distinct virtual investors.
+    \item \textbf{Demonstration:} A Streamlit web application implementing Role-Based Access Control (RBAC) with three distinct user roles.
+\end{itemize}
+
+\subsection{Report Structure}
+\begin{itemize}
+    \item \textbf{Section 2 - Introduction:} Background, motivation, problem statement, objectives, scope, and system architecture overview.
+    \item \textbf{Section 3 - Database Design:} Details the Entity-Relationship diagram, relational schema, and the synthetic data generation logic.
+    \item \textbf{Section 4 - Implementation:} Explains the ELT pipeline architecture and the daily simulation workflow.
+    \item \textbf{Section 5 - Advanced Database Objects \& Security:} Covers the implementation of indexes, views, User-Defined Functions, stored procedures, triggers, and access control.
+    \item \textbf{Section 6 - Results and Analysis:} Evaluates the system outputs, warning distributions, and the front-end dashboard's performance.
+\end{itemize}

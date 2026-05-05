@@ -1,0 +1,99 @@
+\section{Implementation}
+
+\subsection{System Architecture}
+The system utilizes a linear pipeline architecture, directing data from raw file sources through processing layers into the database engine. To satisfy functional completeness and reproducibility criteria[cite: 1], we divide the pipeline execution into two primary phases: \textbf{Historical Backfill} (covering January to August 2025) and \textbf{Real-time Next Day Simulation} (covering September to December 2025).
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/pipeline.png}
+\end{center}
+\caption{System Data Pipeline}
+\end{figure}
+
+The pipeline executes through six distinct steps:
+\begin{itemize}
+    \item \textbf{Step 1 — Market Data Preparation:} \texttt{prepare\_market.py} reads the raw market CSV files. It calculates technical indicators such as volatility, maps the columns to the exact database schema, and loads the data into the \texttt{MarketData} table. This step runs first because the subsequent simulation requires access to the pre-calculated \texttt{Market\_Regime}.
+    \item \textbf{Step 2 — Investor Generation:} \texttt{investor\_data\_generation.py} operates independently. It utilizes the Faker library to generate 1,000 distinct investors. We hardcode a constant \texttt{SEED\_VALUE = 2026} to guarantee data reproducibility across different run environments[cite: 1]. The script inserts these profiles directly into the \texttt{Investors} table.
+    \item \textbf{Step 3 — Transaction Simulation:} \texttt{simulation.py} loads the entire \texttt{MarketData} table into RAM once to prevent N+1 query performance bottlenecks. The engine loops sequentially by date, ticker, and investor to generate trading actions. It outputs the results into two flat files: \texttt{simulation\_transactions.csv} and \texttt{simulation\_portfolio\_history.csv}.
+    \item \textbf{Step 4 — Historical Push with Cutoff:} \texttt{push\_to\_db.py} parses the two output CSVs but strictly enforces an August 31, 2025 cutoff date. It pushes data up to this boundary into the database. The system intentionally retains the September–December 2025 data as "future" data to demonstrate continuous, incremental update capabilities.
+    \item \textbf{Step 5 — Feature Engineering:} \texttt{engineering\_feature.py} reads the historical \texttt{Trades} and \texttt{Portfolios} from the database. It calculates the three behavioral signals using a 30-day sliding window for the entire historical period and pushes the results into \texttt{BehaviorSignals}. The database trigger automatically fires to populate the \texttt{Warnings} table for any investor whose \texttt{PanicScore} exceeds the threshold.
+    \item \textbf{Step 6 — Next Day Simulation:} \texttt{next\_day.py} simulates the daily production environment. Each execution pushes exactly one subsequent trading day of data into the database. It then executes \texttt{CALL sp\_daily\_eod\_process()}. This stored procedure manages the internal logic: invoking four UDFs to calculate signals, inserting records into \texttt{BehaviorSignals}, and allowing the trigger to generate necessary \texttt{Warnings}.
+\end{itemize}
+
+\subsection{Database Integration}
+The system connects to the MySQL instance via SQLAlchemy. This Object-Relational Mapper (ORM) allows the Python application to handle simple data transport operations without manual SQL string concatenation, while maintaining the flexibility to execute raw SQL when triggering complex stored procedures or database-native logic.
+
+\subsubsection{Connection Management}
+We strictly separate credentials from the application logic. The Python script reads the database credentials from a \texttt{.env} file using \texttt{python-dotenv}. The \texttt{config.py} module constructs a standard SQLAlchemy URI string (\texttt{mysql+pymysql://user:pass@host:port/dbname?charset=utf8mb4}). All modules import a single \texttt{create\_engine()} instance, enabling SQLAlchemy to efficiently manage the connection pool across all operations.
+
+\subsubsection{ELT Architecture}
+The system implements an \textbf{ELT (Extract, Load, Transform)} paradigm, fundamentally shifting computational weight away from the Python application layer:
+\begin{itemize}
+    \item \textbf{Extract:} Python reads data from external CSVs or queries baseline tables.
+    \item \textbf{Load:} Python executes standard \texttt{INSERT} statements to populate the \texttt{Trades}, \texttt{Portfolios}, and \texttt{MarketData} tables.
+    \item \textbf{Transform:} MySQL processes all complex business logic internally. The \texttt{sp\_daily\_eod\_process} orchestrates four UDFs to perform mathematical aggregations directly where the data resides.
+\end{itemize}
+This architecture enforces a strict separation of concerns. It leverages the underlying MySQL engine's optimization for bulk data operations rather than loading large datasets into application memory for Python-based calculation.
+
+\subsubsection{Cutoff Design}
+We intentionally reserved the September–December 2025 transaction data to emulate a live production environment. Rather than processing a single massive batch, the cutoff forces the system to ingest EOD data iteratively. This design proves the system's capacity to process incremental updates, calculate rolling metrics daily, and generate automated, real-time warnings consistently[cite: 1].
+
+\subsection{Next Day Simulation}
+Instead of batch-loading the entire dataset at once, we engineered the system to simulate a live production environment. In real-world trading, data arrives incrementally day by day, and the system must automatically update behavioral metrics and generate warnings after each trading session[cite: 1].
+
+We implemented a hard data cutoff to demonstrate this capability:
+\begin{itemize}
+    \item \textbf{January–August 2025}: Pre-loaded into the database as the historical baseline.
+    \item \textbf{September–December 2025}: Retained strictly in CSV files, acting as "unseen future" data[cite: 1].
+\end{itemize}
+
+Each execution of the \texttt{next\_day.py} script pushes exactly one subsequent trading day into the database and triggers the end-of-day logic.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    box/.style={rectangle, draw, rounded corners, minimum width=6.5cm, minimum height=0.8cm, align=center, fill=blue!5},
+    func/.style={rectangle, draw, minimum width=4cm, minimum height=0.5cm, align=center, fill=gray!10, font=\small},
+    arrow/.style={->, >=stealth, thick}
+]
+    % Application Layer
+    \node[box, fill=green!5] (python) {\textbf{\texttt{next\_day.py}} (Python)};
+    
+    % Data Loading
+    \node[box, below of=python, yshift=-0.2cm] (inserts) {INSERT MarketData (9 tickers)\\INSERT Trades ($\sim$260 orders)\\INSERT Portfolios (300 snapshots)};
+    
+    % DB Layer - SP
+    \node[box, fill=purple!5, below of=inserts, yshift=-0.2cm] (sp) {\textbf{\texttt{CALL sp\_daily\_eod\_process(date)}}};
+    
+    % UDFs
+    \node[func, right of=sp, xshift=4.5cm, yshift=1.2cm] (f1) {\texttt{fn\_rolling\_drawdown()}};
+    \node[func, below of=f1, yshift=0.7cm] (f2) {\texttt{fn\_sell\_intensity()}};
+    \node[func, below of=f2, yshift=0.7cm] (f3) {\texttt{fn\_loss\_sensitivity()}};
+    \node[func, below of=f3, yshift=0.7cm] (f4) {\texttt{fn\_panic\_score()}};
+    
+    % Signals
+    \node[box, below of=sp, yshift=-0.2cm] (signals) {INSERT BehaviorSignals\\(300 rows)};
+    
+    % Trigger
+    \node[box, fill=red!10, below of=signals, yshift=-0.2cm] (trigger) {\textbf{Trigger} $\rightarrow$ INSERT Warnings\\(if PanicScore $\ge$ 0.4)};
+
+    % Arrows
+    \draw[arrow] (python) -- (inserts);
+    \draw[arrow] (inserts) -- (sp);
+    \draw[arrow] (sp) -- (signals);
+    \draw[arrow] (signals) -- (trigger);
+
+    % Dashed arrows to UDFs
+    \draw[->, dashed, thick] (sp.east) -- (f1.west);
+    \draw[->, dashed, thick] (sp.east) -- (f2.west);
+    \draw[->, dashed, thick] (sp.east) -- (f3.west);
+    \draw[->, dashed, thick] (sp.east) -- (f4.west);
+
+\end{tikzpicture}
+\caption{Next Day Simulation Execution Flow}
+\end{figure}
+
+The daily execution yields precise, automated outputs. For example, processing the simulated trading day of September 9, 2025, yields the following sequence: the Python script updates closing prices for 9 tickers, logs 260 new trade executions, and saves 300 portfolio NAV snapshots[cite: 1]. Immediately after the data load, the script calls the stored procedure. The procedure computes the 30-day behavioral signals for all 300 investors. On this specific day, the calculation categorizes 3 investors at a "High" panic level and 49 at a "Medium" level. Consequently, the database trigger automatically fires, inserting 52 new alert records directly into the \texttt{Warnings} table.
+
+From a technical standpoint, this pipeline strictly adheres to the ELT architecture[cite: 1]. The Python application layer contains zero computational logic; it merely extracts data from the CSV, loads raw records into the target tables, and issues a single \texttt{CALL} command[cite: 1]. All business rules, weighting algorithms, and condition evaluations execute purely within the database engine via Stored Procedures, User-Defined Functions, and Triggers[cite: 1].
