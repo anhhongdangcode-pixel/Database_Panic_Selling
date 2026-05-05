@@ -17,6 +17,8 @@ CREATE TABLE MarketData (
     Volume BIGINT,   
     DailyReturn FLOAT,                       -- Đổi Percent_Change -> DailyReturn
     Volatility FLOAT,                        -- Thêm cột Volatility theo yêu cầu
+
+    Market_Regime VARCHAR(50),               
     -- Giữ lại các technical indicators của bạn để phục vụ sinh data:
     MA_Volume_30 FLOAT, 
     RSI_14 FLOAT,
