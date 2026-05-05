@@ -71,9 +71,9 @@ class Portfolio:
         total_asset = self.cash + total_stock_value
         
         return {
-            "Date": current_date,
-            "Investor_ID": self.investor_id,
-            "Total_Asset": round(total_asset, 2),
-            "Cash_Balance": round(self.cash, 2),
+            "TradeDate": current_date,
+            "InvestorID": self.investor_id,
+            "NAV": round(total_asset, 2),
+            "CashBalance": round(self.cash, 2),
             "Stock_Value": round(total_stock_value, 2)
         }

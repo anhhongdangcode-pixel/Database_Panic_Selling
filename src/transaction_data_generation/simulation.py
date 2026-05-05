@@ -27,12 +27,12 @@ print(f"🎲 Random Seed đã được cố định: {SEED_VALUE}")
 def load_market_data(ticker, start_date, end_date, engine):
     print(f"📉 Đang tải dữ liệu thị trường cho {ticker}...")
     query = f"""
-    SELECT Date, Ticker, Close, Market_Regime
-    FROM Simulation_Market_Regimes
+    SELECT TradeDate as Date, Ticker, ClosePrice as Close, Market_Regime
+    FROM MarketData
     WHERE Ticker = '{ticker}' 
-      AND Date >= '{start_date}' 
-      AND Date <= '{end_date}'
-    ORDER BY Date ASC
+      AND TradeDate >= '{start_date}' 
+      AND TradeDate <= '{end_date}'
+    ORDER BY TradeDate ASC
     """
     df = pd.read_sql(query, con=engine)
     if df.empty:
@@ -42,9 +42,8 @@ def load_market_data(ticker, start_date, end_date, engine):
 
 def load_investors(engine):
     print("👥 Đang đánh thức các nhà đầu tư...")
-    query = "SELECT * FROM investors"
+    query = "SELECT * FROM Investors"
     df = pd.read_sql(query, con=engine)
-    df = df.rename(columns={'Overconfidence': 'Risk_Appetite'})
     agents = []
     for _, row in tqdm(df.iterrows(), total=df.shape[0], desc="Initializing Agents"):
         agent = InvestorAgent(row)
@@ -82,7 +81,7 @@ def run_simulation(ticker='VIC', start_date='2025-01-01', end_date='2025-12-31')
     engine = create_engine(DB_CONNECTION_STR)
     agents = load_investors(engine)
     # A. Load Dữ liệu
-    all_market_df = pd.read_sql("SELECT * FROM Simulation_Market_Regimes ORDER BY Date ASC", con=engine)
+    all_market_df = pd.read_sql("SELECT TradeDate as Date, Ticker, ClosePrice as Close, Market_Regime FROM MarketData ORDER BY TradeDate ASC", con=engine)
     all_dates = sorted(all_market_df['Date'].unique())
 
     all_transactions = []
@@ -111,9 +110,9 @@ def run_simulation(ticker='VIC', start_date='2025-01-01', end_date='2025-12-31')
             
                 if trade_record:
                     # Tính giá khớp lệnh (có trượt giá slippage)
-                    exec_price = calculate_execution_price(trade_record['Action'], current_price, regime)
+                    exec_price = calculate_execution_price(trade_record['TradeType'], current_price, regime)
                 
-                    trade_record['Trans_ID'] = str(uuid.uuid4())[:8]
+                    trade_record['TradeID'] = str(uuid.uuid4())[:8]
                     trade_record['Price'] = round(exec_price, 2)
                     # Ticker đã có trong trade_record trả về từ Agent
                     all_transactions.append(trade_record)
@@ -130,40 +129,31 @@ def run_simulation(ticker='VIC', start_date='2025-01-01', end_date='2025-12-31')
     if all_transactions:
         df_trans = pd.DataFrame(all_transactions)
         
-        # [CẬP NHẬT] Tên bảng: transactions
-        cols_trans_sql = ['Trans_ID', 'Investor_ID', 'Date', 'Ticker', 'Action', 'Price', 'Quantity', 'Return_Pct', 'Reason']
+        # [CẬP NHẬT] Tên bảng: Trades
+        cols_trans_sql = ['TradeID', 'InvestorID', 'Ticker', 'TradeDate', 'TradeType', 'Quantity', 'Price', 'TradeValue', 'Return_Pct', 'Reason']
         df_trans_sql = df_trans[cols_trans_sql]
         
-        # 1. Lưu CSV (Xóa cũ -> Lưu mới)
+        # Lưu CSV (Xóa cũ -> Lưu mới)
         save_csv_clean(df_trans, "simulation_transactions.csv")
-
-        # 2. Lưu SQL (Safe Append)
-        print(f" -> SQL: Đang đẩy {len(df_trans_sql)} dòng vào bảng 'transactions'...")
-        with engine.begin() as conn:
-            conn.execute(text("DELETE FROM transactions")) # [CẬP NHẬT] Tên bảng chuẩn
-            df_trans_sql.to_sql('transactions', con=conn, if_exists='append', index=False)
-            
-    else:
-        print("⚠️ Không có giao dịch nào được tạo ra!")
-
-    # --- XỬ LÝ PORTFOLIO HISTORY ---
+        print(f"   -> CSV: {len(df_trans)} giao dịch đã được lưu"
     if daily_portfolio_snapshots:
         df_port = pd.DataFrame(daily_portfolio_snapshots)
+        df_port = df_port.rename(columns={
+            'Date': 'TradeDate',
+            'Investor_ID': 'InvestorID',
+            'Total_Asset': 'NAV',
+            'Cash_Balance': 'CashBalance'
+        })
         
-        # [CẬP NHẬT] Tên bảng: portfolio_history
-        cols_port_sql = ['Date', 'Investor_ID', 'Total_Asset', 'Cash_Balance', 'Stock_Value']
+        # [CẬP NHẬT] Tên bảng: Portfolios
+        cols_port_sql = ['TradeDate', 'InvestorID', 'NAV', 'CashBalance', 'Stock_Value']
         df_port_sql = df_port[cols_port_sql]
 
-        # 1. Lưu CSV (Xóa cũ -> Lưu mới)
+        # Lưu CSV (Xóa cũ -> Lưu mới)
         save_csv_clean(df_port, "simulation_portfolio_history.csv")
-
-        # 2. Lưu SQL (Safe Append)
-        print(f" -> SQL: Đang đẩy lịch sử tài sản vào bảng 'portfolio_history'...")
-        with engine.begin() as conn:
-            conn.execute(text("DELETE FROM portfolio_history")) # [CẬP NHẬT] Tên bảng chuẩn
-            df_port_sql.to_sql('portfolio_history', con=conn, if_exists='append', index=False)
+        print(f"   -> CSV: {len(df_port)} snapshots portfolio đã được lưu")
 
     print("\n🎉 MÔ PHỎNG HOÀN TẤT!")
-
-if __name__ == "__main__":
-    run_simulation()
+    print(Lưu CSV (Xóa cũ -> Lưu mới)
+        save_csv_clean(df_port, "simulation_portfolio_history.csv")
+        print(f"   -> CSV: {len(df_port)} snapshots portfolio đã được lưu"

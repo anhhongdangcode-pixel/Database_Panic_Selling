@@ -11,8 +11,8 @@ from portfolio import Portfolio
 
 class InvestorAgent:
     def __init__(self, row_data):
-        self.id = row_data['Investor_ID']
-        self.type = row_data['Investor_Type'] 
+        self.id = row_data.get('InvestorID', row_data.get('Investor_ID'))
+        self.type = row_data.get('RiskProfile', row_data.get('Investor_Type')) 
         
         # --- 4 BIẾN TÂM LÝ ---
         self.chasing_bias = float(row_data.get('Chasing_Bias', 0.5))
@@ -341,14 +341,14 @@ class InvestorAgent:
             
         if is_success:
             return {
-                "Date": date,
-                "Investor_ID": self.id,
+                "TradeDate": date,
+                "InvestorID": self.id,
                 "Ticker": ticker,
-                "Type": self.type,
-                "Action": action,
+                "RiskProfile": self.type,
+                "TradeType": action,
                 "Price": price,
                 "Quantity": quantity,
-                "Total_Val": quantity * price,
+                "TradeValue": quantity * price,
                 "Return_Pct": round(current_return, 4),
                 "Reason": f"{regime}_{action}"
             }
