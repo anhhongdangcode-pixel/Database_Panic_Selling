@@ -37,7 +37,7 @@ DB_USER     = os.getenv("DB_USER")     or "root"
 DB_PASSWORD = os.getenv("DB_PASSWORD") or ""
 DB_HOST     = os.getenv("DB_HOST")     or "127.0.0.1"
 DB_PORT     = os.getenv("DB_PORT")     or "3306"
-DB_NAME     = os.getenv("DB_NAME")     or "fomo_project"
+DB_NAME     = os.getenv("DB_NAME")     or "panic_selling_projects"
 
 # Xây dựng connection string an toàn
 user_part = DB_USER

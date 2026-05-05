@@ -30,9 +30,9 @@ final_data_list = []
 for symbol in symbols:
     print(f"🔄 Đang xử lý mã: {symbol}...")
     try:
-        stock = Vnstock().stock(symbol=symbol, source='VCI')
+        stock = Vnstock().stock(symbol=symbol, source='TCBS')
         df = stock.quote.history(
-            start='2010-01-01',
+            start='2018-01-01',
             end='2025-12-31',
             interval='1D'
         )

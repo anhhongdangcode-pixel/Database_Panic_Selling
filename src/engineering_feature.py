@@ -8,7 +8,7 @@ Tính 3 BehaviorSignals từ Trades + Portfolios đã có trong DB:
 
 PanicScore = 0.4 * DrawdownLevel + 0.4 * SellSpike + 0.2 * LossSensitivity
 
-Sau đó INSERT vào bảng BehaviorSignals (trigger tự bắn vào Warnings).
+Sau đó backfill vào bảng BehaviorSignals theo từng ngày (trigger tự bắn vào Warnings).
 
 Cách chạy:
     cd src
@@ -33,12 +33,23 @@ from config import DB_CONNECTION_STR, DATA_RAW_DIR
 # CONFIG
 # ============================================================
 WINDOW_DAYS     = 30     # Cửa sổ tính signal (30 ngày)
-PANIC_THRESHOLD = 0.65   # Ngưỡng trigger Warning
+MIN_PORTFOLIO_ROWS = 2    # Chỉ cần tối thiểu 2 snapshot để tính drawdown
+PANIC_THRESHOLD = 0.4   # Ngưỡng trigger Warning
 WEIGHTS = {
     'drawdown':        0.4,
     'sell_spike':      0.4,
     'loss_sensitivity': 0.2,
 }
+
+
+def fn_Calculate_Panic_Score(df_signals):
+    """Tính PanicScore bằng vector hóa trên DataFrame."""
+    panic_score = (
+        WEIGHTS['drawdown'] * df_signals['DrawdownLevel'] +
+        WEIGHTS['sell_spike'] * df_signals['SellSpike'] +
+        WEIGHTS['loss_sensitivity'] * df_signals['LossSensitivity']
+    )
+    return np.clip(panic_score, 0.0, 1.0)
 
 # ============================================================
 # LOAD DATA
@@ -94,8 +105,8 @@ def compute_signals_for_investor(investor_id, obs_date, trades_df, portfolios_df
         (trades_df['TradeDate'] <= obs_date)
     ]
 
-    # Cần ít nhất 5 ngày portfolio và có ít nhất 1 lệnh
-    if len(inv_port) < 5 or len(inv_trades) == 0:
+    # Nếu không có đủ portfolio snapshot thì không tính được drawdown
+    if len(inv_port) < MIN_PORTFOLIO_ROWS:
         return None
 
     # -------------------------------------------------------
@@ -109,8 +120,9 @@ def compute_signals_for_investor(investor_id, obs_date, trades_df, portfolios_df
     if peak_nav <= 0:
         drawdown = 0.0
     else:
-        drawdown = max(0.0, (peak_nav - final_nav) / peak_nav)
-
+        raw_drawdown = max(0.0, (peak_nav - final_nav) / peak_nav)
+        # Bơm hệ số x5 để scale điểm số lên sát thực tế tâm lý hoảng loạn
+        drawdown = float(np.clip(raw_drawdown * 5.0, 0.0, 1.0))
     # -------------------------------------------------------
     # SIGNAL 2: SellSpike
     # Tỷ lệ SELL "hoảng loạn" (Reason có PANIC hoặc DISTRIBUTION)
@@ -120,6 +132,7 @@ def compute_signals_for_investor(investor_id, obs_date, trades_df, portfolios_df
 
     if len(sell_trades) == 0:
         sell_spike = 0.0
+        loss_sensitivity = 0.0
     else:
         panic_sells = sell_trades['Reason'].str.contains(
             'PANIC|DISTRIBUTION', case=False, na=False
@@ -132,9 +145,6 @@ def compute_signals_for_investor(investor_id, obs_date, trades_df, portfolios_df
     # trên tổng SELL trong cửa sổ
     # Investor FOMO hay bán lỗ vì hoảng loạn
     # -------------------------------------------------------
-    if len(sell_trades) == 0:
-        loss_sensitivity = 0.0
-    else:
         loss_sells = (sell_trades['Return_Pct'] < 0).sum()
         loss_sensitivity = loss_sells / len(sell_trades)
 
@@ -160,85 +170,143 @@ def compute_signals_for_investor(investor_id, obs_date, trades_df, portfolios_df
 # BUILD TOÀN BỘ DATASET & PUSH VÀO DB
 # ============================================================
 def build_and_push_behavior_signals(engine):
-    investors_df, trades_df, portfolios_df = load_data(engine)
+    _, trades_df, portfolios_df = load_data(engine)
 
-    # Chọn ngày quan sát: ngày cuối cùng trong portfolio history
-    # (hoặc có thể chạy theo từng tháng nếu muốn)
-    last_date = portfolios_df['TradeDate'].max()
-    obs_date  = last_date
-    print(f"\n📅 Ngày quan sát: {obs_date.date()}")
+    trading_dates = pd.Index(portfolios_df['TradeDate'].dropna().sort_values().unique())
+    daily_frames = []
 
-    # --- Tính signals cho từng investor ---
-    records = []
-    print("\n⚙️  Đang tính BehaviorSignals cho từng investor...")
+    print("\n⚙️  Đang backfill BehaviorSignals theo từng ngày...")
+    print(f"   -> Tổng số ngày giao dịch: {len(trading_dates):,}")
 
-    for _, row in tqdm(investors_df.iterrows(), total=len(investors_df)):
-        inv_id = row['InvestorID']
-        signals = compute_signals_for_investor(
-            inv_id, obs_date, trades_df, portfolios_df
-        )
-        if signals is None:
+    for current_date in tqdm(trading_dates, total=len(trading_dates)):
+        window_start = current_date - pd.Timedelta(days=WINDOW_DAYS)
+
+        window_portfolios = portfolios_df[
+            (portfolios_df['TradeDate'] >= window_start) &
+            (portfolios_df['TradeDate'] <= current_date)
+        ].sort_values(['InvestorID', 'TradeDate'])
+
+        if window_portfolios.empty:
             continue
 
-        records.append({
-            'InvestorID':      inv_id,
-            'ObservationDate': obs_date.date(),
-            **signals
-        })
+        drawdown_df = (
+            window_portfolios
+            .groupby('InvestorID', as_index=False)
+            .agg(
+                PeakNAV=('NAV', 'max'),
+                FinalNAV=('NAV', 'last'),
+                PortfolioRows=('NAV', 'size')
+            )
+        )
+        drawdown_df = drawdown_df[drawdown_df['PortfolioRows'] >= MIN_PORTFOLIO_ROWS].copy()
 
-    if not records:
-        print("⚠️  Không có dữ liệu đủ để tính signals. Kiểm tra lại DB.")
+        if drawdown_df.empty:
+            continue
+
+        raw_drawdown = (drawdown_df['PeakNAV'] - drawdown_df['FinalNAV']) / drawdown_df['PeakNAV']
+        raw_drawdown = raw_drawdown.replace([np.inf, -np.inf], np.nan).fillna(0.0)
+        drawdown_df['DrawdownLevel'] = np.clip(raw_drawdown * 5.0, 0.0, 1.0)
+
+        window_trades = trades_df[
+            (trades_df['TradeDate'] >= window_start) &
+            (trades_df['TradeDate'] <= current_date)
+        ].copy()
+
+        if window_trades.empty:
+            trade_df = pd.DataFrame(columns=['InvestorID', 'TotalSell', 'PanicSell', 'LossSell'])
+        else:
+            sell_trades = window_trades[window_trades['TradeType'] == 'SELL'].copy()
+
+            if sell_trades.empty:
+                trade_df = pd.DataFrame(columns=['InvestorID', 'TotalSell', 'PanicSell', 'LossSell'])
+            else:
+                sell_trades['IsPanicSell'] = sell_trades['Reason'].str.contains(
+                    'PANIC|DISTRIBUTION', case=False, na=False
+                ).astype(np.int8)
+                sell_trades['IsLossSell'] = (sell_trades['Return_Pct'] < 0).astype(np.int8)
+
+                trade_df = (
+                    sell_trades
+                    .groupby('InvestorID', as_index=False)
+                    .agg(
+                        TotalSell=('InvestorID', 'size'),
+                        PanicSell=('IsPanicSell', 'sum'),
+                        LossSell=('IsLossSell', 'sum')
+                    )
+                )
+
+        df_today_signals = drawdown_df[['InvestorID', 'DrawdownLevel']].merge(
+            trade_df,
+            on='InvestorID',
+            how='left'
+        )
+
+        df_today_signals[['TotalSell', 'PanicSell', 'LossSell']] = (
+            df_today_signals[['TotalSell', 'PanicSell', 'LossSell']]
+            .fillna(0)
+            .astype(np.int64)
+        )
+
+        df_today_signals['SellSpike'] = np.where(
+            df_today_signals['TotalSell'] > 0,
+            df_today_signals['PanicSell'] / df_today_signals['TotalSell'],
+            0.0
+        )
+        df_today_signals['LossSensitivity'] = np.where(
+            df_today_signals['TotalSell'] > 0,
+            df_today_signals['LossSell'] / df_today_signals['TotalSell'],
+            0.0
+        )
+        df_today_signals['PanicScore'] = fn_Calculate_Panic_Score(df_today_signals)
+        df_today_signals['ObservationDate'] = current_date.normalize()
+
+        df_today_signals = df_today_signals[
+            ['InvestorID', 'ObservationDate', 'DrawdownLevel', 'SellSpike', 'LossSensitivity', 'PanicScore']
+        ]
+
+        daily_frames.append(df_today_signals)
+
+    if not daily_frames:
+        print("⚠️  Không có dữ liệu đủ để backfill signals.")
         return
 
-    df_signals = pd.DataFrame(records)
+    df_signals = pd.concat(daily_frames, ignore_index=True)
 
-    print(f"\n📊 Kết quả tính toán ({len(df_signals)} investors):")
-    print(df_signals[['InvestorID', 'DrawdownLevel', 'SellSpike',
-                       'LossSensitivity', 'PanicScore']].describe().round(4))
+    print(f"\n📊 Kết quả backfill ({len(df_signals):,} rows, {df_signals['ObservationDate'].nunique():,} ngày):")
+    print(df_signals[['DrawdownLevel', 'SellSpike', 'LossSensitivity', 'PanicScore']].describe().round(4))
 
-    # --- Thống kê PanicLevel ---
-    df_signals['PanicLevel'] = df_signals['PanicScore'].apply(
-        lambda s: 'High' if s >= 0.80 else ('Medium' if s >= 0.65 else 'Low')
+    df_signals['PanicLevel'] = np.select(
+        [df_signals['PanicScore'] >= 0.6, df_signals['PanicScore'] >= 0.4],
+        ['High', 'Medium'],
+        default='Low'
     )
     print("\n📈 Phân phối PanicLevel:")
     print(df_signals['PanicLevel'].value_counts())
 
-    # --- Lưu CSV để backup ---
     csv_path = DATA_RAW_DIR / 'behavior_signals.csv'
     df_signals.to_csv(csv_path, index=False)
     print(f"\n💾 Đã lưu CSV: {csv_path}")
 
-    # --- Push vào MySQL ---
-    print("\n🚀 Đang đẩy vào bảng BehaviorSignals (trigger sẽ tự fill Warnings)...")
-    cols_to_db = [
-        'InvestorID', 'ObservationDate',
-        'DrawdownLevel', 'SellSpike', 'LossSensitivity', 'PanicScore'
-    ]
-    df_to_db = df_signals[cols_to_db]
+    print("\n🚀 Đang backfill vào bảng BehaviorSignals (trigger sẽ tự fill Warnings)...")
+    df_to_db = df_signals[['InvestorID', 'ObservationDate', 'DrawdownLevel', 'SellSpike', 'LossSensitivity', 'PanicScore']].copy()
 
     with engine.begin() as conn:
-        # Xóa data cũ của ngày này để tránh duplicate
-        conn.execute(
-            text("DELETE FROM BehaviorSignals WHERE ObservationDate = :d"),
-            {"d": str(obs_date.date())}
-        )
-        df_to_db.to_sql(
-            'BehaviorSignals',
-            con=conn,
-            if_exists='append',
-            index=False,
-            chunksize=500
-        )
+        conn.execute(text("DELETE FROM Warnings"))
+        conn.execute(text("DELETE FROM BehaviorSignals"))
 
-    # --- Kiểm tra Warnings được tạo tự động ---
+    df_to_db.to_sql(
+        'BehaviorSignals',
+        con=engine,
+        if_exists='append',
+        index=False,
+        chunksize=1000
+    )
+
     with engine.connect() as conn:
-        warning_count = conn.execute(
-            text("SELECT COUNT(*) FROM Warnings WHERE WarningDate = :d"),
-            {"d": str(obs_date.date())}
-        ).scalar()
+        warning_count = conn.execute(text("SELECT COUNT(*) FROM Warnings")).scalar()
 
-    print(f"\n✅ Đã push {len(df_to_db)} BehaviorSignals")
-    print(f"🔔 Trigger đã tạo {warning_count} Warnings tự động")
+    print(f"\n✅ Đã push {len(df_to_db):,} BehaviorSignals")
+    print(f"🔔 Trigger hiện có {warning_count:,} Warnings")
     print("\n🎉 HOÀN TẤT!")
 
 
